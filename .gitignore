@@ -73,3 +73,6 @@ crashlytics-build.properties
 
 # File do app Claude lưu (có mã tài khoản) — không commit
 Claude outputs/
+
+# Sổ theo dõi tiến độ của agent
+.superpowers/
