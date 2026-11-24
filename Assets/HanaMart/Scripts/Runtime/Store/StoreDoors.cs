@@ -49,7 +49,7 @@ namespace HanaMart.Store
             {
                 if (marker.key == "R:door") Front = Add(marker.transform, 1.35f, 5);
                 else if (marker.key == "R:backDoor") Back = Add(marker.transform, -1.6f, 4);
-                else if (marker.key == "R:freezerLid") { Freezer = Add(marker.transform, 1.2f, 1000); Freezer.motor.axis = Vector3.right; }
+                else if (marker.key == "R:freezerLid") { Freezer = Add(marker.transform, -1.2f, 1000); Freezer.motor.axis = Vector3.right; }
                 else if (marker.key.StartsWith("S:fridgeDoors["))
                 {
                     float sign = JsonUtility.FromJson<Metadata>(marker.json).sign;

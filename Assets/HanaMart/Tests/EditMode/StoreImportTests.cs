@@ -73,6 +73,13 @@ namespace HanaMart.Tests
             foreach (var hit in hits) doors.Use("fridgeDoor",hit);
             Assert.IsTrue(doors.Fridges.All(d => d.motor.target == 0));
         }
+        [Test] public void FreezerFrontEdgeOpensUpward()
+        {
+            var doors = root.GetComponent<StoreDoors>(); doors.Bind();
+            doors.Freezer.motor.target = 1; doors.Tick(1);
+            Assert.Greater((doors.Freezer.motor.Rotation * Vector3.forward).y, .9f);
+            doors.Freezer.motor.target = 0; doors.Tick(1);
+        }
 
         [Test] public void LightsMatchMeta()
         {

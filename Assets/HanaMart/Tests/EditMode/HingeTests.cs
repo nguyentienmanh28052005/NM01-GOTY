@@ -26,8 +26,9 @@ namespace HanaMart.Tests
         }
         [Test] public void FreezerLidReflectsXAxis()
         {
-            var h = new HingeMotor(1.2f,100f) { target=1, axis=Vector3.right }; h.Tick(1);
-            Assert.That(Quaternion.Angle(Quaternion.Euler(1.2f*Mathf.Rad2Deg,0,0),h.Rotation),Is.LessThan(.001f));
+            var h = new HingeMotor(-1.2f,100f) { target=1, axis=Vector3.right }; h.Tick(1);
+            var edge = h.Rotation * ThreeCoords.ToUnity(0,0,.7f);
+            Assert.That(Vector3.Distance(edge,ThreeCoords.ToUnity(0,Mathf.Sin(1.2f)*.7f,Mathf.Cos(1.2f)*.7f)),Is.LessThan(.00001f));
         }
         [Test] public void ClosingReturnsToIdentityWithoutOvershoot()
         {

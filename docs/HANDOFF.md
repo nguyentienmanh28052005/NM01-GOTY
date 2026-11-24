@@ -50,6 +50,7 @@ Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ b
   QA qua MCP: `HanaMart/QA/Face Rules` (bật runInBackground trong Play để MCP kiểm được frame thật), `Runtime Snapshot` → `Logs/HanaMart/runtime.json`, warning/error/exception từng Play → `Logs/HanaMart/play-errors.log`; `Reload Scripts` yêu cầu nạp assembly mới.
 - **Task 4 XONG**: `HingeMotor` + `StoreDoors` gắn khi Build Store; cửa trước +1.35 rad Unity/rate 5, cửa sau −1.6/rate 4, 12 cánh tủ ∓1.45/rate 5, lò +1.75/rate 7, nắp tủ đông +1.2 quanh X. Ghép hit tủ với cánh khi đóng, không ghép lại theo vị trí lúc đang mở. BackDoor collider đồng bộ với target. Giữ front door collider đúng source (người chơi không được rời ca).
   TDD: hinge RED 8/8 → GREEN 9/9 gồm kiểm ghép 12 hit; toàn assembly **63/63**, job `a81e0182e32149658fe99743fc5abc76`. Play `HanaMart/QA/Open Doors`, ảnh `p2-open-doors-verified.png`, play-errors.log rỗng.
+  Sửa tiếp: nắp tủ đông phải **−1.2 rad quanh X** (phản chiếu X giữ dấu góc quanh chính X). Test mép trước nắp nâng lên RED (y=−0.932) → GREEN 9/9, job `84d3b964fd6846388a35fba2fea49652`. Mô tả +1.2 ở trên đã được thay bằng giá trị đúng này.
   Chạy kiểm có lưu bằng chứng: `python tools/unity_test.py --label <tên> --compile` (hoặc `--filter HanaMart.Tests.XTests`); kết quả ở `Logs/HanaMart/tests/`. Từ chối lượt 0 test.
 - Task 5 đang tới: cầm/đặt Q + đồ rơi. `StoreDoors.defaultInteractions` là tương tác tạm để kiểm cửa; Kế hoạch 4 phải tắt và điều khiển qua logic luật (đặc biệt tủ đông/lò), tránh mở tủ tự do khi đã có kịch bản.
 
