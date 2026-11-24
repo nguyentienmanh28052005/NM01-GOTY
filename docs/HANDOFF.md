@@ -1,29 +1,63 @@
 # HANDOFF — HanaMart24 → Unity (NM01-GOTY)
 
-> Đọc file này đầu tiên nếu bạn (Codex hoặc một phiên Claude mới) tiếp tục công việc.
+> **Đọc file này đầu tiên.** Người bàn giao: Claude (2026-11-25 02:15). Người nhận: Codex (hoặc phiên Claude mới).
+> Người dùng: Nguyễn Tiến Mạnh — nói tiếng Việt, hãy trả lời bằng tiếng Việt.
 
-## Bối cảnh
-- Chuyển game Three.js **HanaMart24 v2.2** (`E:\Downloads\top\top\HanaMart24`, đọc `GAME_DOC.md`, mã nguồn `source/src/`) sang Unity, giữ y nguyên bố cục, màu, kịch bản.
-- Spec: `docs/superpowers/specs/2026-11-25-hanamart24-unity-port-design.md` (đã duyệt).
-- Kế hoạch đang chạy: `docs/superpowers/plans/2026-11-25-hanamart24-p1-foundation.md` (7 task). Các kế hoạch 2–7 viết khi bắt đầu từng phần (lộ trình ở cuối plan).
-- Sổ tiến độ chi tiết: `.superpowers/sdd/2026-11-25-hanamart24-p1-foundation/progress.md` (không commit).
-- Git: làm trên nhánh `manh`, commit sau mỗi task (`git -c user.name="manh2805" -c user.email="tienmanh2805@gmail.com" commit`), **không push**.
+## 1. Mục tiêu (yêu cầu gốc của người dùng)
+Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ bản Three.js v2.2 sang Unity:
+- Bản gốc: `E:\Downloads\top\top\HanaMart24` — đọc `GAME_DOC.md` (thiết kế đầy đủ: 13 điều nội quy, phụ lục, điều 14, 3 phase, đạo diễn khách, mốc giờ, dị thường, 9 bẫy, Giờ Đỏ, 15 màn chết, 2 kết thúc…), mã nguồn `source/src/*.js`, bản chơi `HanaMart24.html`.
+- **Giữ y nguyên bố cục, màu sắc, kịch bản** của bản Three.js.
+- Nhân vật: dùng 4 model trong `Assets/Art/Model/Charactor` (Ch31 = `Female Walk - Lat Mat.fbx`, Ch08 = `character (4)`, Ch01 = `character (5)`, Ch42 = `character (6)`). **Hướng A**: dùng lại 4 model cho mọi vai, đổi màu quần áo, thêm lớp áo mưa vàng phủ ngoài, trẻ em = thu nhỏ model người lớn ×0.68.
+- Hàng bán trong cửa hàng: thay bằng asset `Assets/Art/Model/super-market-for-free` (món không có tương đương → chọn món tương tự; chữ trong game đổi theo hình, vd. "Sữa chuối" → "Bánh mandu", "Kimbap" → "Cơm cuộn").
+- Kệ/quầy/tủ: tạm dùng như bản Three.js.
+- **Trước khi bàn giao cho người dùng: test lại toàn bộ game, sửa hết lỗi, so hình ảnh với bản Three.js.**
 
-## Công cụ
-- Unity 6000.3.8f1 + URP 17.3, mở project này. MCP for Unity (CoplayDev v10.1.2, stdio) đã cấu hình cho app Claude desktop.
-- Test: Unity Test Runner, assembly `HanaMart.Tests.EditMode` (Window > General > Test Runner, hoặc MCP `run_tests`).
-- Công cụ xuất từ bản Three.js: `tools/three-export/` (Python + Playwright + Chrome headless chạy `HanaMart24.html`).
+## 2. Tài liệu
+- Spec (đã duyệt): `docs/superpowers/specs/2026-11-25-hanamart24-unity-port-design.md`
+- Kế hoạch 1 (XONG): `docs/superpowers/plans/2026-11-25-hanamart24-p1-foundation.md`
+- Kế hoạch 2 (ĐANG LÀM): `docs/superpowers/plans/2026-11-25-hanamart24-p2-player.md` — lộ trình kế hoạch 3–7 ở cuối plan 1.
+- Sổ tiến độ + mọi quyết định ("Ruling"): `.superpowers/sdd/*/progress.md` (git-ignored, đọc trực tiếp).
+- So sánh hình ảnh: `docs/visual/compare/report.md` + ảnh `docs/visual/compare/*.jpg`.
 
-## Trạng thái
-| Task | Trạng thái |
-|---|---|
-| 1. Khung project (asmdef, scene `Assets/HanaMart/Scenes/HanaMart24.unity`, Build Settings) | XONG |
-| 2. Material + rig Humanoid 4 nhân vật (`HanaMart/Setup Characters`) | XONG |
-| 3. Xuất cảnh Three.js → glTF (`tools/three-export/export_store.py` → `Assets/HanaMart/Art/FromThree/store.gltf`) | XONG |
-| 4. Dựng cửa hàng từ glTF (`HanaMart/Build Store`) | XONG |
-| 5. Thay hàng hóa (`HanaMart/Extract Products` → `Assets/HanaMart/Data/ProductCatalog.asset`) | XONG |
-| 6. Hậu kỳ AgX + Film (`HanaMart/Setup Rendering`, shader `HanaMart/AgxFilm`, `FilmSettings` trên camera) | XONG |
-| 7. So sánh hình ảnh (`docs/visual/compare/report.md`) | XONG |
+## 3. Quy ước làm việc
+- Unity **6000.3.8f1** (editor `E:\Unity\Unity\6000.0.40f1\6000.3.8f1\Editor\Unity.exe`), URP 17.3, project `E:\Unity\My Project\Main\NM01-GOTY`.
+- Git: nhánh **`manh`**. Commit sau mỗi task: `git -c user.name="manh2805" -c user.email="tienmanh2805@gmail.com" commit`. **KHÔNG push** khi người dùng chưa yêu cầu. Không commit `Assets/_Recovery/`, `Claude outputs/`.
+- TDD: viết test trước (Unity Test Framework, assembly `HanaMart.Tests.EditMode`), xem FAIL rồi mới code. **Mọi vòng lặp trong test phải có giới hạn** (đã từng làm treo Unity vì `while` không giới hạn) — dùng `[Timeout(10000)]`.
+- Không sửa `Assets/Scenes/GameScene.unity` và `Assets/Scenes/Animation Test.unity` (của người dùng).
+- **Logic gameplay chạy trong hệ tọa độ Three.js** (x, z như bản gốc). Chỉ lớp hiển thị đổi sang Unity bằng `HanaMart.Store.ThreeCoords` (x → −x). Camera: yaw Unity = 180° − yaw Three, pitch Unity = −pitch Three.
+- Màu Three.js (r152+) là **tuyến tính** → khi gán cho Unity `_BaseColor`, `Light.color`, `RenderSettings` phải `.gamma`.
 
-## Bước tiếp theo
-Kế hoạch 1 xong. Bước tiếp: viết Kế hoạch 2 (Người chơi & tương tác) theo lộ trình cuối plan 1.
+## 4. Đã xong (Kế hoạch 1, commit `e542897` → `585e11c`, 33/33 test xanh)
+| Việc | Kết quả | Menu/Công cụ |
+|---|---|---|
+| Khung project | asmdef `HanaMart.Runtime/Editor/Tests.EditMode`, scene `Assets/HanaMart/Scenes/HanaMart24.unity` (scene build #0) | — |
+| Nhân vật | texture tách khỏi FBX, material URP Lit (Specular) cho Ch08/Ch01/Ch42, rig **Humanoid** cả 4 | `HanaMart/Setup Characters` |
+| Xuất cảnh Three.js | `tools/three-export/export_store.py` + `gltf_writer.js` → `Assets/HanaMart/Art/FromThree/store.gltf` (+bin, 110 PNG, `store_meta.json`). Node: `S:<khóa store>`, `R:<refs>`, `P:<loại>:<biến thể>[:restock]` (hàng), `L:<i>` (đèn), `H:<id>` (vùng tương tác, extras {id,label}) | `python3 tools/three-export/export_store.py` (cần Playwright + Chrome) |
+| Dựng cửa hàng | `StoreImporter` (material→URP, đèn, 38 va chạm, probe Custom, sương mù) + `StoreMarker` trên mọi node có khóa | `HanaMart/Build Store` (tự Bake probe) |
+| Hàng hóa | `ProductExtractor` + `Assets/HanaMart/Data/ProductCatalog.asset` (8 prefab/nhóm, tên hiển thị); 3629 món thay, thuốc lá giữ | `HanaMart/Extract Products` rồi `Build Store` |
+| Hậu kỳ | AgX (r160, exposure 1.02) + shader Film của main.js: `Assets/HanaMart/Art/Shaders/AgxFilm.shader`, Full Screen Pass trên `PC_Renderer`, `FilmSettings` trên camera, Volume Bloom 0.3/0.5/1.05 | `HanaMart/Setup Rendering` |
+| So sánh hình | 12 góc (`tools/three-export/viewpoints.json`); 10/12 lệch độ sáng ≤10% | `HanaMart/Capture Viewpoints` + `python3 tools/three-export/capture_three.py` + `compare.py` |
+
+## 5. Đang làm (Kế hoạch 2)
+- **Task 6 XONG**: 36 âm thanh + 6 lớp nền xuất từ WebAudio → `Assets/HanaMart/Audio/FromThree/*.wav` (`tools/three-export/export_audio.py`, test `test_audio.py`).
+- **Task 1 DỞ**: `Assets/HanaMart/Scripts/Runtime/Player/{PlayerTypes,WalkArea,PlayerMotor}.cs` + test `Tests/EditMode/PlayerMotorTests.cs`.
+  RED đã xác nhận (9 test fail với stub). Code thật đã viết (bản dịch `player.js` dòng 62–146) **nhưng CHƯA chạy test để xác nhận GREEN** — Unity bị kẹt Play mode lúc bàn giao.
+  👉 Việc đầu tiên: thoát Play mode, chạy `HanaMart.Tests.PlayerMotorTests` → sửa tới khi 10/10 xanh → commit, ghi ledger.
+- Task 2–5 chưa làm (xem plan 2): ThreeCoords camera + PlayerController + Input System; Interactor (ray 2.1 m vào `H:*`, **lưu ý: StoreImporter đang `SetActive(false)` các vùng H vì extras.hidden=true → phải sửa: H luôn active, chỉ tắt renderer**); bản lề cửa/tủ/lò; cầm/đặt Q.
+
+## 6. Việc còn lại sau đó (kế hoạch 3–7, viết chi tiết khi bắt đầu)
+3. Nhân vật `Actor` (mặt nạ quần áo + nhuộm, áo mưa vỏ phồng, trẻ em 0.68, biến hình xương + material reveal, NavMesh, clip `Female Walk` retarget, đứng/thở thủ tục).
+4. Kịch bản `game.js` (1260 dòng): đồng hồ 6/7/8 s mỗi phút game, đạo diễn khách, 13 luật, mốc giờ, dị thường, bẫy, cảnh cáo, checkpoint mỗi giờ, Giờ Đỏ, nhật ký, Sổ tay, 2 kết thúc. Giữ nguyên mọi hằng số.
+5. 15 màn chết (`deaths.js`) + khoảnh khắc điện ảnh.
+6. UI (menu/cài đặt/tạm dừng/HUD/phụ đề/giấy, tiếng Việt), lưu JSON, mức đồ họa, tay cầm, F3, H.
+7. Kiểm thử toàn bộ: port `sim.js` (bot), chạy trọn ca 00:00→06:00, so hình lần cuối, đo FPS, báo cáo cho người dùng.
+
+## 7. Vấn đề đã biết / bẫy kỹ thuật
+- **Forward+ của URP 17 lỗi** khi `Camera.Render()` trong Editor (NRE `ReflectionProbeManager`, rồi kẹt `ZBinningJob`) → `PC_Renderer` đang dùng **Forward** (8 đèn/vật). Hẻm sau tối hơn bản gốc ~48% (đèn cam chưa hắt đủ) — có thể do giới hạn này; cân nhắc Forward+ và chụp trong Play mode.
+- Tủ mát tối hơn ~27% (hàng thay thế tối màu). Chưa có: mưa (Points), vệt phản chiếu đường ướt + quầng đèn đường (ShaderMaterial, đang tắt renderer, marker `ShaderMesh`).
+- glTFast đổi tên node trùng thành `tên_0, tên_1…` — `StoreImporter.SameNode()` đã xử lý.
+- Scene `HanaMart24.unity` ~20 MB (dựng lại toàn bộ mỗi lần Build Store). Chưa có Git LFS.
+- MCP for Unity (CoplayDev 10.1.2) chạy stdio qua app Claude desktop; Codex có thể dùng Unity CLI/Editor trực tiếp trên máy.
+
+## 8. Bàn giao cho người dùng (khi mọi kế hoạch xong)
+Phải chơi thử trọn ca, sửa hết lỗi Console, so hình với bản Three.js (`docs/visual/compare`), rồi mới báo người dùng.
