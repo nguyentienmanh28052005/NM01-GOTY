@@ -1,6 +1,6 @@
 """Kiểm tra WAV xuất từ export_audio.py: đủ file, đúng định dạng, không câm, không vỡ tiếng."""
 import os, struct, sys, wave, json
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'out', 'audio')
+OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(os.path.abspath(__file__)), 'out', 'audio')
 EXPECT = 36 + 6
 def check():
     fs = [f for f in os.listdir(OUT) if f.endswith('.wav')]

@@ -56,7 +56,8 @@ Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ b
   TDD RED 10 fail/11 → GREEN toàn assembly **75/75**, job `2d388eaec4424776a17e31b6bf344209`. QA `Carry Smoke` sáu loại đạt; `Carry Rapid Smoke` bắt MissingReferenceException khi nhặt ngay .31 s (squash còn truy cập đồ đã hủy) → đã sửa dừng squash khi picking; kiểm lại sáu loại đạt, `Logs/HanaMart/carry-rapid-smoke.json`, play-errors.log rỗng.
   `StoreDoors.defaultInteractions` và `CarryController.defaultInteractions` là tương tác tạm để kiểm; Kế hoạch 4 phải tắt và điều khiển qua logic luật (đặc biệt tủ đông/lò), tránh mở tủ tự do khi đã có kịch bản. Placement fallback hiện dùng WalkArea người chơi; khi có navigation (Kế hoạch 3), nối walkableAt R=.24/grid .15 đúng bản gốc.
   Vật lý đồ rơi dùng bản dịch physics.js, không dùng Rigidbody động vì 38 hộp va chạm chặn người cao 3 m sẽ bắt đồ rơi sai mặt. Tương tác giữa các đồ rơi cũng như source (không có va chạm đồ–đồ).
-- Task 6 còn thiếu phần AudioBank.asset trong plan (WAV đã xuất đủ); hoàn thiện trước Kế hoạch 3.
+- **Task 6 hoàn thiện**: `Data/AudioBank.asset` đủ 42 clip bằng id tên file; menu `HanaMart/Build Audio Bank`, `AudioBank.Find(id)`. Bank test RED (thiếu asset) → GREEN; assembly cuối Kế hoạch 2 **76/76**, job `19678b74179847d6ab72147ce873a24d` (6.70 s). `python tools/three-export/test_audio.py Assets/HanaMart/Audio/FromThree` → PASS 42 stereo/44.1 kHz, không câm/vỡ theo ngưỡng gốc. Đã đưa .meta WAV vào git; runtime phát âm thanh nối khi có game director.
+- **Tiếp theo: viết/làm Kế hoạch 3** (Actor, nhuộm, áo mưa, trẻ em, humanoid clip, biến hình, navigation). Kế hoạch 4–7 chưa bắt đầu; chưa có ca chơi được 00:00→06:00, chưa so hình cuối và chưa được coi là hoàn thành port.
 
 ## 6. Việc còn lại sau đó (kế hoạch 3–7, viết chi tiết khi bắt đầu)
 3. Nhân vật `Actor` (mặt nạ quần áo + nhuộm, áo mưa vỏ phồng, trẻ em 0.68, biến hình xương + material reveal, NavMesh, clip `Female Walk` retarget, đứng/thở thủ tục).

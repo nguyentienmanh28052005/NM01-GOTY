@@ -82,3 +82,9 @@ tools/three-export/out/
 
 # Ảnh chụp Unity tạm thời (so sánh xem docs/visual/compare)
 docs/visual/unity/
+
+# Unity recovery scenes and local Python caches are never task deliverables.
+/Assets/_Recovery/
+/Assets/_Recovery.meta
+__pycache__/
+*.pyc

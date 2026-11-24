@@ -10,6 +10,15 @@
 
 **Spec:** `docs/superpowers/specs/2026-11-25-hanamart24-unity-port-design.md`
 
+## Trạng thái thực thi (Codex, 2026-11-25)
+- Task 1: GREEN 10/10; full EditMode 43/43; commit `c132192`.
+- Task 2: camera/input; full 48/48; commit `63c1c86`.
+- Task 3: 33 trigger active, ray/E/hold + TMP tiếng Việt; full 54/54; commit `75dc9d8`.
+- Task 4: bản lề + ghép hit/cánh; full 63/63; commit `1b340ac`; sửa hướng nắp tủ đông bằng regression test RED→GREEN `51dc35b`.
+- Task 5: cầm/đặt/nhặt, vật lý dịch physics.js; full 75/75 + Play smoke 6 loại + rapid pickup; commit `a6bbfab`.
+- Task 6: WAV commit `1ade60a`, AudioBank hoàn thiện; full **76/76**, job `19678b74179847d6ab72147ce873a24d`; Python PASS 42 WAV.
+- Chi tiết quyết định/khác biệt và QA: `docs/HANDOFF.md`, ledger `.superpowers/sdd/2026-11-25-hanamart24-p2-player/progress.md`. Chưa kiểm tay cầm vật lý; các tương tác mặc định là lớp tích hợp tạm, sẽ bị thay bằng game.js ở Kế hoạch 4. Toàn bộ port chưa hoàn tất.
+
 ## Global Constraints
 - Giữ nguyên số liệu `player.js`: R 0.28, ZONES `[[0,0,12,8],[0,-4.6,4.6,0],[-1.4,-9.1,8.4,-4.6]]`, bắt đầu (0.85, 0, 4.4), mắt 1.62, ngồi −0.72, đi 1.6 / chạy 3.0 m/s (×(1−0.55·crouch)), gia tốc `min(1, dt·9)`, bước 0.68/0.82 m, pitch ±1.35 rad, độ nhạy chuột 0.0022·S.mouseSens, tay cầm 2.4·padSens·(1−0.55·zoom), lắc đầu 0.035/0.018/0.004/0.003.
 - Ray tương tác: tâm màn hình, xa 2.1 m, vào các vùng `H:*` (kể cả vùng bị ẩn).
