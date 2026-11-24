@@ -20,9 +20,9 @@ RenderSettings:
   m_FogDensity: 0.022
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 2.0349998, g: 2.0349998, b: 2.0925, a: 2.15}
-  m_AmbientEquatorColor: {r: 1.075, g: 1.075, b: 1.1324999, a: 2.15}
-  m_AmbientGroundColor: {r: 0.2875, g: 0.2875, b: 0.345, a: 2.15}
+  m_AmbientSkyColor: {r: 1.2351568, g: 1.2420588, b: 1.3125, a: 1.37}
+  m_AmbientEquatorColor: {r: 0.7346078, g: 0.73547053, b: 0.7942647, a: 1.37}
+  m_AmbientGroundColor: {r: 0.4065588, g: 0.40138233, b: 0.44852942, a: 1.37}
   m_AmbientIntensity: 1
   m_AmbientMode: 1
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
@@ -81339,6 +81339,7 @@ GameObject:
   - component: {fileID: 651042146}
   - component: {fileID: 651042148}
   - component: {fileID: 651042147}
+  - component: {fileID: 651042149}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -81725,6 +81726,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f976ad663d62ca469ca5d8060acf533, type: 3}
   m_Name: 
   m_EditorClassIdentifier: HanaMart.Runtime::HanaMart.Interaction.Interactor
+--- !u!114 &651042149
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 651042140}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0126573e8bb8eb34b9a561b23b090b0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HanaMart.Runtime::HanaMart.Interaction.CarryController
+  catalog: {fileID: 11400000, guid: 03f961e4f2e0dcf4291536a06336a3be, type: 2}
+  defaultInteractions: 1
 --- !u!1001 &651771393
 PrefabInstance:
   m_ObjectHideFlags: 0

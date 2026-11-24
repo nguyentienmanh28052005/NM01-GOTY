@@ -24,6 +24,8 @@ namespace HanaMart.EditorTools
             if (!camera.GetComponent<Interactor>()) camera.gameObject.AddComponent<Interactor>();
             if (!camera.GetComponent<InteractionPrompt>()) camera.gameObject.AddComponent<InteractionPrompt>();
             camera.GetComponent<InteractionPrompt>().sourceFont = AssetDatabase.LoadAssetAtPath<Font>("Assets/HanaMart/Art/Fonts/NotoSans-Regular.ttf");
+            if (!camera.GetComponent<CarryController>()) camera.gameObject.AddComponent<CarryController>();
+            camera.GetComponent<CarryController>().catalog = AssetDatabase.LoadAssetAtPath<HanaMart.Store.ProductCatalog>(ProductExtractor.CatalogPath);
             player.collisionBoxes = new List<Box2>();
             var meta = JObject.Parse(File.ReadAllText(StoreImporter.MetaPath));
             foreach (JArray c in meta["colliders"])

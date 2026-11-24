@@ -52,7 +52,11 @@ Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ b
   TDD: hinge RED 8/8 → GREEN 9/9 gồm kiểm ghép 12 hit; toàn assembly **63/63**, job `a81e0182e32149658fe99743fc5abc76`. Play `HanaMart/QA/Open Doors`, ảnh `p2-open-doors-verified.png`, play-errors.log rỗng.
   Sửa tiếp: nắp tủ đông phải **−1.2 rad quanh X** (phản chiếu X giữ dấu góc quanh chính X). Test mép trước nắp nâng lên RED (y=−0.932) → GREEN 9/9, job `84d3b964fd6846388a35fba2fea49652`. Mô tả +1.2 ở trên đã được thay bằng giá trị đúng này.
   Chạy kiểm có lưu bằng chứng: `python tools/unity_test.py --label <tên> --compile` (hoặc `--filter HanaMart.Tests.XTests`); kết quả ở `Logs/HanaMart/tests/`. Từ chối lượt 0 test.
-- Task 5 đang tới: cầm/đặt Q + đồ rơi. `StoreDoors.defaultInteractions` là tương tác tạm để kiểm cửa; Kế hoạch 4 phải tắt và điều khiển qua logic luật (đặc biệt tủ đông/lò), tránh mở tủ tự do khi đã có kịch bản.
+- **Task 5 XONG**: `Placement` dịch `surfaceAt/placeTarget/tween` (mặt quầy 1.02, kệ sau quầy .92, bàn 1.02, sàn 0; ray 2.6 m; fallback 1.6→.5 m có giới hạn), `CarryController` đọc Q/RB: giữ xem bóng mờ + vòng sáng, thả đặt, E nhặt. Sáu loại đồ, tay áo, thùng lấy khỏi kho tắt cả collider, cây lau để lại xô; tên Bánh mandu/Cơm cuộn. `ItemPhysics` + `ItemPhysicsBody` dịch trọng lực 9.8, nảy/ma sát/ngủ/wall từ physics.js.
+  TDD RED 10 fail/11 → GREEN toàn assembly **75/75**, job `2d388eaec4424776a17e31b6bf344209`. QA `Carry Smoke` sáu loại đạt; `Carry Rapid Smoke` bắt MissingReferenceException khi nhặt ngay .31 s (squash còn truy cập đồ đã hủy) → đã sửa dừng squash khi picking; kiểm lại sáu loại đạt, `Logs/HanaMart/carry-rapid-smoke.json`, play-errors.log rỗng.
+  `StoreDoors.defaultInteractions` và `CarryController.defaultInteractions` là tương tác tạm để kiểm; Kế hoạch 4 phải tắt và điều khiển qua logic luật (đặc biệt tủ đông/lò), tránh mở tủ tự do khi đã có kịch bản. Placement fallback hiện dùng WalkArea người chơi; khi có navigation (Kế hoạch 3), nối walkableAt R=.24/grid .15 đúng bản gốc.
+  Vật lý đồ rơi dùng bản dịch physics.js, không dùng Rigidbody động vì 38 hộp va chạm chặn người cao 3 m sẽ bắt đồ rơi sai mặt. Tương tác giữa các đồ rơi cũng như source (không có va chạm đồ–đồ).
+- Task 6 còn thiếu phần AudioBank.asset trong plan (WAV đã xuất đủ); hoàn thiện trước Kế hoạch 3.
 
 ## 6. Việc còn lại sau đó (kế hoạch 3–7, viết chi tiết khi bắt đầu)
 3. Nhân vật `Actor` (mặt nạ quần áo + nhuộm, áo mưa vỏ phồng, trẻ em 0.68, biến hình xương + material reveal, NavMesh, clip `Female Walk` retarget, đứng/thở thủ tục).
