@@ -15,6 +15,8 @@ Nguồn: `source/src/person.js`, `game.js` (Actor), `nav.js` trong bản Three.j
 
 ## Task 2 — Mặt nạ quần áo, shader nhuộm/lộ dạng, áo mưa
 
+Đã hoàn thiện: nhiều vòng RED cho mask thực, phân loại mesh và phụ kiện → full **103/103 GREEN**, job `be13e51ab0aa487a92d4699c25dd8a65`. Ảnh QA trong `docs/visual/characters/`; Actor animation vẫn thuộc Task 3.
+
 - [ ] Test RED: mỗi body material có mask data linear và diffuse/spec/normal còn nguyên; mask phân biệt da/quần áo; shader compile không lỗi; reveal=0 không đổi base texture; áo mưa không che mặt/tay.
 - [ ] Editor sinh mask từ UV + trọng số xương và màu da ở vùng tay, lưu trong HanaMart; kiểm ảnh atlas và mask cho cả bốn model. Kênh R áo, G quần, B da, A mặt. Hair giữ material tóc và alpha.
 - [ ] Shader URP dựa trên LitInput/LitForwardPass của package 17.3 đang cài; tint chỉ vùng quần áo. Noise/vein và vertex jitter dịch person.js, tham số reveal 0..1/time giây. Tách include dùng chung cho forward/depth/shadow để không lệch bóng.

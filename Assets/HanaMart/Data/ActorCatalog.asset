@@ -16,13 +16,142 @@ MonoBehaviour:
   - id: Ch31
     model: {fileID: 919132149155446097, guid: ec354adad15188449b2dd4c0ae7f5651, type: 3}
     avatar: {fileID: 9000000, guid: ec354adad15188449b2dd4c0ae7f5651, type: 3}
+    renderers:
+    - path: Ch31_Body
+      materials:
+      - {fileID: 2100000, guid: 89070d1834a893b498318ec6f2ba0752, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: f6e9b03fd0c10ad47beb954bea3c747d, type: 2}
+    - path: Ch31_Collar
+      materials:
+      - {fileID: 2100000, guid: c02c6201ccabaad43859e7a199828fe7, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: 07d115645c618f044a484ab9f3431f19, type: 2}
+    - path: Ch31_Eyelashes
+      materials:
+      - {fileID: 2100000, guid: e8b13eea25999bc4583fb45952640528, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: e8b13eea25999bc4583fb45952640528, type: 2}
+    - path: Ch31_Hair
+      materials:
+      - {fileID: 2100000, guid: e8b13eea25999bc4583fb45952640528, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: e8b13eea25999bc4583fb45952640528, type: 2}
+    - path: Ch31_Pants
+      materials:
+      - {fileID: 2100000, guid: 8e2a780e26957704bbde64f391a37df9, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: 3c3b4046f0ad4f242acbffcde9b974e6, type: 2}
+    - path: Ch31_Shoes
+      materials:
+      - {fileID: 2100000, guid: 6bb29d63f7f050a42ac0819a44548e9f, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: ee8ba73fdbc0f2e4398065b87d6b9835, type: 2}
+    - path: Ch31_Sweater
+      materials:
+      - {fileID: 2100000, guid: e9c69fd469b9c8046a7dfb5c43c04757, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: 2299287c0b55c324d87fa640e49b96ef, type: 2}
   - id: Ch08
     model: {fileID: 919132149155446097, guid: 1fc57ed0b42261445bfaf6d76aa833d5, type: 3}
     avatar: {fileID: 9000000, guid: 1fc57ed0b42261445bfaf6d76aa833d5, type: 3}
+    renderers:
+    - path: Ch08_Beard
+      materials:
+      - {fileID: 2100000, guid: c42f5e1beb37fbe4d89ce9fc97087777, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: c42f5e1beb37fbe4d89ce9fc97087777, type: 2}
+    - path: Ch08_Body
+      materials:
+      - {fileID: 2100000, guid: 5d56aef49067a044daf92ce7b37b4892, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: 26546c61ad76fa84097a7bd794c7d4ea, type: 2}
+    - path: Ch08_Eyelashes
+      materials:
+      - {fileID: 2100000, guid: c42f5e1beb37fbe4d89ce9fc97087777, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: c42f5e1beb37fbe4d89ce9fc97087777, type: 2}
+    - path: Ch08_Hair
+      materials:
+      - {fileID: 2100000, guid: c42f5e1beb37fbe4d89ce9fc97087777, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: c42f5e1beb37fbe4d89ce9fc97087777, type: 2}
+    - path: Ch08_Hoodie
+      materials:
+      - {fileID: 2100000, guid: 427f4df513d17794081ade0a53aacc34, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: 2e9fa3134e1d23c4abe8f6c0d7980705, type: 2}
+    - path: Ch08_Pants
+      materials:
+      - {fileID: 2100000, guid: 26896d5a0083efc44ab433d4c8df210a, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: 54bd9e02f22152541b51b2561024a99c, type: 2}
+    - path: Ch08_Sneakers
+      materials:
+      - {fileID: 2100000, guid: bc8f53bb502a9454d9d0166672f7b37e, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: ee5e701f63b1d6741817c7d05ebd495b, type: 2}
   - id: Ch01
     model: {fileID: 919132149155446097, guid: 7d9c2e1a935bb7b4fa5fe0c7111308f6, type: 3}
     avatar: {fileID: 9000000, guid: 7d9c2e1a935bb7b4fa5fe0c7111308f6, type: 3}
+    renderers:
+    - path: Ch01_Body
+      materials:
+      - {fileID: 2100000, guid: 6df8c757a805a7044b56483aa3221cf1, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: c954ce1eb2d77e04296bfc7ee988d3fa, type: 2}
+    - path: Ch01_Eyelashes
+      materials:
+      - {fileID: 2100000, guid: ef6d7dc3ae5006f49b50584e8da3b06a, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: ef6d7dc3ae5006f49b50584e8da3b06a, type: 2}
+    - path: Ch01_Pants
+      materials:
+      - {fileID: 2100000, guid: d2a02a930767c9747a5dfc2a4d4c1209, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: 4b41b1e76e2c266469d49ca9337655a6, type: 2}
+    - path: Ch01_Shirt
+      materials:
+      - {fileID: 2100000, guid: 6790c827638439346b218fcf66e65b49, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: 595fdb1294895734e91c54504dc376ea, type: 2}
+    - path: Ch01_Sneakers
+      materials:
+      - {fileID: 2100000, guid: 19fd93e9256c9194b9ba2e594f8b6aac, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: 858d2b7d545b754428e072afecacaf17, type: 2}
   - id: Ch42
     model: {fileID: 919132149155446097, guid: f7a0035fe22499147910bf65e791313c, type: 3}
     avatar: {fileID: 9000000, guid: f7a0035fe22499147910bf65e791313c, type: 3}
+    renderers:
+    - path: Ch42__Eyelashes
+      materials:
+      - {fileID: 2100000, guid: 6790fcd89122bad4987b30c70e31af81, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: 6790fcd89122bad4987b30c70e31af81, type: 2}
+    - path: Ch42_Body1
+      materials:
+      - {fileID: 2100000, guid: ee99a78f4a3de1d408cca9f4af9f1ba5, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: 0d6bd488b2496284da9dfc502eb65b64, type: 2}
+    - path: Ch42_Hair1
+      materials:
+      - {fileID: 2100000, guid: 6790fcd89122bad4987b30c70e31af81, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: 6790fcd89122bad4987b30c70e31af81, type: 2}
+    - path: Ch42_Shirt
+      materials:
+      - {fileID: 2100000, guid: ce5fa6e269f11a9469c984d20bce2690, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: 992e2d343b98a024fad7f047fd6391ab, type: 2}
+    - path: Ch42_Shorts
+      materials:
+      - {fileID: 2100000, guid: 6f6a36dbf43b7ac49b4e052af1de2606, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: a5773a6d7be7d354988a39ff08030e52, type: 2}
+    - path: Ch42_Sneakers
+      materials:
+      - {fileID: 2100000, guid: d43ccb3f72b049d4bb9ca2d2b96155e0, type: 2}
+      rainMaterials:
+      - {fileID: 2100000, guid: 5c3724b4d313f5d4e80d9c90e69e4d96, type: 2}
   walk: {fileID: -203655887218126122, guid: ec354adad15188449b2dd4c0ae7f5651, type: 3}
