@@ -1,13 +1,25 @@
 {
     "name": "HanaMart.Editor",
     "rootNamespace": "HanaMart.EditorTools",
-    "references": ["HanaMart.Runtime", "glTFast", "glTFast.Editor", "Unity.RenderPipelines.Core.Runtime", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Universal.Editor"],
-    "includePlatforms": ["Editor"],
+    "references": [
+        "HanaMart.Runtime",
+        "glTFast",
+        "glTFast.Editor",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Universal.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
+    "overrideReferences": true,
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
-    "noEngineReferences": false
+    "noEngineReferences": false,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll"
+    ]
 }
