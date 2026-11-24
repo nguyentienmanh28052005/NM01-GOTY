@@ -41,8 +41,9 @@ Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ b
 ## 5. Đang làm (Kế hoạch 2)
 - **Task 6 XONG**: 36 âm thanh + 6 lớp nền xuất từ WebAudio → `Assets/HanaMart/Audio/FromThree/*.wav` (`tools/three-export/export_audio.py`, test `test_audio.py`).
 - **Task 1 DỞ**: `Assets/HanaMart/Scripts/Runtime/Player/{PlayerTypes,WalkArea,PlayerMotor}.cs` + test `Tests/EditMode/PlayerMotorTests.cs`.
-  RED đã xác nhận (9 test fail với stub). Code thật đã viết (bản dịch `player.js` dòng 62–146) **nhưng CHƯA chạy test để xác nhận GREEN** — Unity bị kẹt Play mode lúc bàn giao.
-  👉 Việc đầu tiên: thoát Play mode, chạy `HanaMart.Tests.PlayerMotorTests` → sửa tới khi 10/10 xanh → commit, ghi ledger.
+  RED đã xác nhận (9 test fail với stub). **Codex đã thoát Play mode và xác nhận GREEN 10/10** qua MCPForUnity (job `395fefe067474194ace10c355da1c43c`); không cần sửa logic.
+  Toàn bộ assembly `HanaMart.Tests.EditMode`: **43/43 PASS**, 0 skipped (job `17cbf317269a4974b3f3e2ad0a730096`, 4.96 s).
+  Công cụ Codex: `python tools/unity_bridge.py <command> '<JSON>'` kết nối MCPForUnity loopback của đúng project; dùng `run_tests` / `get_test_job`, `manage_editor`, `execute_menu_item`. Không cần khởi động Unity thứ hai.
 - Task 2–5 chưa làm (xem plan 2): ThreeCoords camera + PlayerController + Input System; Interactor (ray 2.1 m vào `H:*`, **lưu ý: StoreImporter đang `SetActive(false)` các vùng H vì extras.hidden=true → phải sửa: H luôn active, chỉ tắt renderer**); bản lề cửa/tủ/lò; cầm/đặt Q.
 
 ## 6. Việc còn lại sau đó (kế hoạch 3–7, viết chi tiết khi bắt đầu)
@@ -58,6 +59,7 @@ Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ b
 - glTFast đổi tên node trùng thành `tên_0, tên_1…` — `StoreImporter.SameNode()` đã xử lý.
 - Scene `HanaMart24.unity` ~20 MB (dựng lại toàn bộ mỗi lần Build Store). Chưa có Git LFS.
 - MCP for Unity (CoplayDev 10.1.2) chạy stdio qua app Claude desktop; Codex có thể dùng Unity CLI/Editor trực tiếp trên máy.
+- Khi Codex nhận bàn giao, Editor đang ở scene phục hồi `0` và Play mode. Đã dừng an toàn bằng `manage_editor stop`. Các thay đổi có sẵn `NM01-GOTY.slnx`, `ProjectSettings/QualitySettings.asset`, ảnh `docs/visual/store_back.png` và `Assets/_Recovery*` không thuộc task, không đưa vào commit. Các `.meta` âm thanh do Unity sinh sẽ đưa cùng tài sản âm thanh.
 
 ## 8. Bàn giao cho người dùng (khi mọi kế hoạch xong)
 Phải chơi thử trọn ca, sửa hết lỗi Console, so hình với bản Three.js (`docs/visual/compare`), rồi mới báo người dùng.
