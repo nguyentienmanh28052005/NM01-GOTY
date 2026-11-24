@@ -60,6 +60,20 @@ namespace HanaMart.Tests
             }
         }
 
+        [Test] public void EveryFridgeHitKeepsItsLeafAfterOpening()
+        {
+            var doors = root.GetComponent<StoreDoors>(); Assert.IsNotNull(doors); doors.Bind();
+            Assert.IsNotNull(doors.Front); Assert.IsNotNull(doors.Back); Assert.IsNotNull(doors.Freezer);
+            Assert.AreEqual(12, doors.Fridges.Count); Assert.AreEqual(2, doors.Microwaves.Count);
+            var hits = root.GetComponentsInChildren<StoreMarker>().Where(m => m.key == "H:fridgeDoor").ToArray();
+            Assert.AreEqual(12, hits.Length);
+            foreach (var hit in hits) doors.Use("fridgeDoor",hit);
+            Assert.IsTrue(doors.Fridges.All(d => d.motor.target == 1));
+            doors.Tick(1);
+            foreach (var hit in hits) doors.Use("fridgeDoor",hit);
+            Assert.IsTrue(doors.Fridges.All(d => d.motor.target == 0));
+        }
+
         [Test] public void LightsMatchMeta()
         {
             var lights = root.GetComponentsInChildren<Light>(true);

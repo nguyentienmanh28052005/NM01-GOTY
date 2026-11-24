@@ -31,6 +31,15 @@ namespace HanaMart.EditorTools
             UnityEditor.Compilation.CompilationPipeline.RequestScriptCompilation();
             EditorUtility.RequestScriptReload();
         }
+        [MenuItem("HanaMart/QA/Open Doors")]
+        public static void OpenDoors()
+        {
+            if (!Application.isPlaying) return;
+            Application.runInBackground = true;
+            var doors = Object.FindFirstObjectByType<StoreDoors>();
+            doors.Front.motor.target = doors.Back.motor.target = doors.Freezer.motor.target = 1;
+            foreach (var leaf in doors.Fridges.Concat(doors.Microwaves)) leaf.motor.target = 1;
+        }
         [MenuItem("HanaMart/QA/Face Rules")]
         public static void FaceRules()
         {

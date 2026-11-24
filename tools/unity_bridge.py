@@ -95,4 +95,10 @@ def call(command, params=None, timeout=45):
 
 
 if __name__ == "__main__":
-    print(json.dumps(call(sys.argv[1], json.loads(sys.argv[2]) if len(sys.argv) > 2 else {}), ensure_ascii=True))
+    def compact(value):
+        if isinstance(value, dict):
+            return {k: compact(v) for k, v in value.items() if k not in ("imageBase64", "previewBase64")}
+        if isinstance(value, list):
+            return [compact(v) for v in value]
+        return value
+    print(json.dumps(compact(call(sys.argv[1], json.loads(sys.argv[2]) if len(sys.argv) > 2 else {})), ensure_ascii=True))

@@ -48,7 +48,10 @@ Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ b
 - **Task 3 XONG**: `Interactor` (ray 2.1 m, E/bấm/giữ, `LabelFor`, `HoldSeconds`, grace 0.12 s), `InteractionPrompt` TMP/uGUI; `H:*` luôn active, renderer tắt. RED 5 lỗi/6 test → toàn assembly GREEN **54/54**, job `0094e5eeed4f45588c05024774819c21`. Scene đã Build Store lại + Setup Player; Play snapshot xác nhận 33 hit active, trace/current `rules`, nhãn tiếng Việt đúng. Ảnh `docs/visual/unity/p2-interaction-rules-verified.png`.
   Font Noto Sans (OFL trong `Art/Fonts`); TMP essentials từ package đang cài được đặt tại `Assets/HanaMart/ThirdParty/TextMesh Pro`, GUID giữ nguyên (`python tools/import_tmp_resources.py`). Built-in LegacyRuntime không dùng được với TMP FontEngine.
   QA qua MCP: `HanaMart/QA/Face Rules` (bật runInBackground trong Play để MCP kiểm được frame thật), `Runtime Snapshot` → `Logs/HanaMart/runtime.json`, warning/error/exception từng Play → `Logs/HanaMart/play-errors.log`; `Reload Scripts` yêu cầu nạp assembly mới.
-- Task 4–5 đang tới: bản lề cửa/tủ/lò; cầm/đặt Q.
+- **Task 4 XONG**: `HingeMotor` + `StoreDoors` gắn khi Build Store; cửa trước +1.35 rad Unity/rate 5, cửa sau −1.6/rate 4, 12 cánh tủ ∓1.45/rate 5, lò +1.75/rate 7, nắp tủ đông +1.2 quanh X. Ghép hit tủ với cánh khi đóng, không ghép lại theo vị trí lúc đang mở. BackDoor collider đồng bộ với target. Giữ front door collider đúng source (người chơi không được rời ca).
+  TDD: hinge RED 8/8 → GREEN 9/9 gồm kiểm ghép 12 hit; toàn assembly **63/63**, job `a81e0182e32149658fe99743fc5abc76`. Play `HanaMart/QA/Open Doors`, ảnh `p2-open-doors-verified.png`, play-errors.log rỗng.
+  Chạy kiểm có lưu bằng chứng: `python tools/unity_test.py --label <tên> --compile` (hoặc `--filter HanaMart.Tests.XTests`); kết quả ở `Logs/HanaMart/tests/`. Từ chối lượt 0 test.
+- Task 5 đang tới: cầm/đặt Q + đồ rơi. `StoreDoors.defaultInteractions` là tương tác tạm để kiểm cửa; Kế hoạch 4 phải tắt và điều khiển qua logic luật (đặc biệt tủ đông/lò), tránh mở tủ tự do khi đã có kịch bản.
 
 ## 6. Việc còn lại sau đó (kế hoạch 3–7, viết chi tiết khi bắt đầu)
 3. Nhân vật `Actor` (mặt nạ quần áo + nhuộm, áo mưa vỏ phồng, trẻ em 0.68, biến hình xương + material reveal, NavMesh, clip `Female Walk` retarget, đứng/thở thủ tục).

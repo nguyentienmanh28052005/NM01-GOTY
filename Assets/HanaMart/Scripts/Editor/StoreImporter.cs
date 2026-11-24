@@ -75,6 +75,7 @@ namespace HanaMart.EditorTools
             AddColliders(root, (JArray)meta["colliders"]);
             AddProbe(root);
             ApplySceneSettings(scene, gltf, meta);
+            root.AddComponent<StoreDoors>();
             return root;
         }
 
