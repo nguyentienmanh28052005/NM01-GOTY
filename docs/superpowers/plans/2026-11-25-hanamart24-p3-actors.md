@@ -6,6 +6,8 @@ Nguồn: `source/src/person.js`, `game.js` (Actor), `nav.js` trong bản Three.j
 
 ## Task 1 — Dữ liệu vai, chuyển động thuần, catalog bốn model
 
+Đã hoàn thiện: RED job `31b6506df2e94226aed935d9aacd33b0` → full GREEN 88/88 `80c51531af844726a7993886817db6d8`.
+
 - [ ] Viết test trước: trẻ em .68; scale/tall tùy chọn; reveal nội suy dt×1.6; cổ/đầu/tay và eye emission theo đúng person.js; nhìn đầu yaw ±1.3, pitch .7; cập nhật lặp không tăng dần transform; catalog đủ bốn avatar và clip humanoid.
 - [ ] Stub → chạy RED, ghi job; viết ActorOptions/ActorMotion/ActorCatalog, editor tạo catalog, chạy GREEN.
 - [ ] Vai mặc định: Ch31 cho nữ tóc dài/Mi-rae/biểu cảm; Ch08 cho nam áo mưa/quản lý; Ch01 cho khách nam/trẻ thu nhỏ; Ch42 cho nữ/khách áo khoác. Cho phép override bằng model index trong dữ liệu vai, không sửa model gốc.
