@@ -22,8 +22,8 @@
 | 3. Xuất cảnh Three.js → glTF (`tools/three-export/export_store.py` → `Assets/HanaMart/Art/FromThree/store.gltf`) | XONG |
 | 4. Dựng cửa hàng từ glTF (`HanaMart/Build Store`) | XONG |
 | 5. Thay hàng hóa (`HanaMart/Extract Products` → `Assets/HanaMart/Data/ProductCatalog.asset`) | XONG |
-| 6. Hậu kỳ AgX + Film | chưa |
+| 6. Hậu kỳ AgX + Film (`HanaMart/Setup Rendering`, shader `HanaMart/AgxFilm`, `FilmSettings` trên camera) | XONG |
 | 7. So sánh hình ảnh | chưa |
 
 ## Bước tiếp theo
-Task 6 trong plan.
+Task 7 trong plan.

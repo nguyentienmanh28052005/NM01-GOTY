@@ -189,6 +189,7 @@ namespace HanaMart.EditorTools
             p.boxProjection = true; p.size = new Vector3(12, 3, 8);
             p.center = ThreeCoords.ToUnity(6f, 1.5f, 4f) - go.transform.localPosition;
             p.resolution = 256; p.hdr = true; p.importance = 1;
+            go.AddComponent<ProbeRefresh>();
         }
 
         static void ApplySceneSettings(Scene scene, JObject gltf, JObject meta)
