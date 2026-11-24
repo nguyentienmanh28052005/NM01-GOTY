@@ -127,7 +127,7 @@ namespace HanaMart.EditorTools
             }
             if (kind == StoreMarker.Kind.ShaderMesh) // shader riêng (quầng đèn, vệt đường ướt, mảng mục) — port ở kế hoạch sau
                 foreach (var r in go.GetComponents<Renderer>()) r.enabled = false;
-            if (ex != null && (bool?)ex["hidden"] == true) go.SetActive(false);
+            if (ex != null && (bool?)ex["hidden"] == true && kind != StoreMarker.Kind.Hit) go.SetActive(false);
             if (go.TryGetComponent<MeshRenderer>(out var rr))
                 rr.shadowCastingMode = ex != null && (bool?)ex["castShadow"] == true ? ShadowCastingMode.On : ShadowCastingMode.Off;
         }

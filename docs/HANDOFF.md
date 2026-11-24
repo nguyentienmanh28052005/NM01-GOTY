@@ -45,7 +45,10 @@ Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ b
   Toàn bộ assembly `HanaMart.Tests.EditMode`: **43/43 PASS**, 0 skipped (job `17cbf317269a4974b3f3e2ad0a730096`, 4.96 s).
   Công cụ Codex: `python tools/unity_bridge.py <command> '<JSON>'` kết nối MCPForUnity loopback của đúng project; dùng `run_tests` / `get_test_job`, `manage_editor`, `execute_menu_item`. Không cần khởi động Unity thứ hai.
 - **Task 2 XONG**: `ThreeCoords.CameraRotation`, `PlayerController`, `Input/HanaMartControls.inputactions`, menu `HanaMart/Setup Player`. Camera scene HanaMart24 có 38 hộp va chạm Three.js, FOV 72; chuột delta Y đảo về quy ước trình duyệt, pad stick deadzone 0.16/0.12. Rung bằng Input System. Test camera RED 5/5 → GREEN 5/5; EditMode 48/48. Play scene: Console 0 warning/error, ảnh `docs/visual/unity/p2-player-start.png` (chưa thử tay cầm vật lý).
-- Task 3–5 đang tới: Interactor (ray 2.1 m vào `H:*`, **lưu ý: StoreImporter đang `SetActive(false)` các vùng H vì extras.hidden=true → phải sửa: H luôn active, chỉ tắt renderer**); bản lề cửa/tủ/lò; cầm/đặt Q.
+- **Task 3 XONG**: `Interactor` (ray 2.1 m, E/bấm/giữ, `LabelFor`, `HoldSeconds`, grace 0.12 s), `InteractionPrompt` TMP/uGUI; `H:*` luôn active, renderer tắt. RED 5 lỗi/6 test → toàn assembly GREEN **54/54**, job `0094e5eeed4f45588c05024774819c21`. Scene đã Build Store lại + Setup Player; Play snapshot xác nhận 33 hit active, trace/current `rules`, nhãn tiếng Việt đúng. Ảnh `docs/visual/unity/p2-interaction-rules-verified.png`.
+  Font Noto Sans (OFL trong `Art/Fonts`); TMP essentials từ package đang cài được đặt tại `Assets/HanaMart/ThirdParty/TextMesh Pro`, GUID giữ nguyên (`python tools/import_tmp_resources.py`). Built-in LegacyRuntime không dùng được với TMP FontEngine.
+  QA qua MCP: `HanaMart/QA/Face Rules` (bật runInBackground trong Play để MCP kiểm được frame thật), `Runtime Snapshot` → `Logs/HanaMart/runtime.json`, warning/error/exception từng Play → `Logs/HanaMart/play-errors.log`; `Reload Scripts` yêu cầu nạp assembly mới.
+- Task 4–5 đang tới: bản lề cửa/tủ/lò; cầm/đặt Q.
 
 ## 6. Việc còn lại sau đó (kế hoạch 3–7, viết chi tiết khi bắt đầu)
 3. Nhân vật `Actor` (mặt nạ quần áo + nhuộm, áo mưa vỏ phồng, trẻ em 0.68, biến hình xương + material reveal, NavMesh, clip `Female Walk` retarget, đứng/thở thủ tục).
@@ -62,6 +65,7 @@ Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ b
 - MCP for Unity (CoplayDev 10.1.2) chạy stdio qua app Claude desktop; Codex có thể dùng Unity CLI/Editor trực tiếp trên máy.
 - Khi Codex nhận bàn giao, Editor đang ở scene phục hồi `0` và Play mode. Đã dừng an toàn bằng `manage_editor stop`. Các thay đổi có sẵn `NM01-GOTY.slnx`, `ProjectSettings/QualitySettings.asset`, ảnh `docs/visual/store_back.png` và `Assets/_Recovery*` không thuộc task, không đưa vào commit. Các `.meta` âm thanh do Unity sinh sẽ đưa cùng tài sản âm thanh.
 - Người dùng yêu cầu **dùng MCP**, không Computer Use. Đã chuyển MCP sang HTTP local `http://127.0.0.1:8090` (instance `NM01-GOTY@fccbaeec7da3b4aa`). `tools/unity_bridge.py` hỗ trợ HTTP ưu tiên và stdio dự phòng; reconnect sau domain reload trước khi chạy lệnh, không tự phát lại lệnh đã gửi.
+- Unity nền có thể trì hoãn compile/reload dù refresh_unity báo idle. Luôn đối chiếu DLL `Library/ScriptAssemblies/HanaMart.*.dll` mới hơn source trước khi chạy test; `HanaMart/QA/Reload Scripts` hoặc vào/ra Play qua MCP ép nạp lại. Lượt test trên assembly cũ không được tính GREEN. `read_console` có thể trả 0 khi bộ lọc cửa sổ Console che log; kiểm thêm play-errors.log và Editor.log.
 
 ## 8. Bàn giao cho người dùng (khi mọi kế hoạch xong)
 Phải chơi thử trọn ca, sửa hết lỗi Console, so hình với bản Three.js (`docs/visual/compare`), rồi mới báo người dùng.

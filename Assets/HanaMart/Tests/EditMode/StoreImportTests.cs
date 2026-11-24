@@ -11,6 +11,7 @@ using UnityEngine.SceneManagement;
 
 namespace HanaMart.Tests
 {
+    [Timeout(10000)]
     public class StoreImportTests
     {
         Scene scene; GameObject root; JObject meta, gltf;
@@ -44,6 +45,19 @@ namespace HanaMart.Tests
         {
             int n = root.GetComponentsInChildren<StoreMarker>(true).Count(m => m.kind == StoreMarker.Kind.Hit);
             Assert.AreEqual((int)meta["counts"]["hits"], n, "glTFast đổi tên node trùng (H:fridgeDoor_0...) vẫn phải được đánh dấu");
+        }
+
+        [Test] public void HitsAreActiveTriggers()
+        {
+            var hits = root.GetComponentsInChildren<StoreMarker>(true).Where(m => m.kind == StoreMarker.Kind.Hit).ToArray();
+            Assert.AreEqual(33, hits.Length);
+            foreach (var hit in hits)
+            {
+                Assert.IsTrue(hit.gameObject.activeInHierarchy, hit.name);
+                Assert.AreEqual(LayerMask.NameToLayer("Interact"), hit.gameObject.layer, hit.name);
+                Assert.IsTrue(hit.GetComponent<BoxCollider>().isTrigger, hit.name);
+                foreach (var renderer in hit.GetComponents<Renderer>()) Assert.IsFalse(renderer.enabled, hit.name);
+            }
         }
 
         [Test] public void LightsMatchMeta()

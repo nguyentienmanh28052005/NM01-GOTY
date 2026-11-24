@@ -17,11 +17,17 @@ def call(command, params=None, timeout=45):
     # The editor can switch between stdio and its installed HTTP MCP server.
     # Select the actual instance by the full project hash (not the current/default session).
     http = "http://127.0.0.1:8090"
-    try:
-        with urllib.request.urlopen(http + "/api/instances", timeout=2) as response:
-            instances = json.load(response).get("instances", [])
-    except (OSError, ValueError):
-        instances = []
+    instances = []
+    for attempt in range(25):
+        try:
+            with urllib.request.urlopen(http + "/api/instances", timeout=2) as response:
+                instances = json.load(response).get("instances", [])
+        except (OSError, ValueError):
+            break  # No HTTP server: discover its stdio bridge below.
+        target = [i for i in instances if i.get("project") == "NM01-GOTY" and i.get("hash") == "fccbaeec7da3b4aa"]
+        if target:
+            break
+        time.sleep(1)  # Server remains alive while its Unity domain reconnects.
     target = [i for i in instances if i.get("project") == "NM01-GOTY" and i.get("hash") == "fccbaeec7da3b4aa"]
     if len(target) == 1:
         payload = json.dumps({"type": command, "params": params or {}, "unity_instance": "NM01-GOTY@" + target[0]["hash"]}).encode()

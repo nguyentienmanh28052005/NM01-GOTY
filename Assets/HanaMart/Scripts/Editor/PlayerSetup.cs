@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using HanaMart.Player;
+using HanaMart.Interaction;
 using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -20,6 +21,9 @@ namespace HanaMart.EditorTools
             var camera = Camera.main;
             var player = camera.GetComponent<PlayerController>() ?? camera.gameObject.AddComponent<PlayerController>();
             player.controls = AssetDatabase.LoadAssetAtPath<InputActionAsset>(ControlsPath);
+            if (!camera.GetComponent<Interactor>()) camera.gameObject.AddComponent<Interactor>();
+            if (!camera.GetComponent<InteractionPrompt>()) camera.gameObject.AddComponent<InteractionPrompt>();
+            camera.GetComponent<InteractionPrompt>().sourceFont = AssetDatabase.LoadAssetAtPath<Font>("Assets/HanaMart/Art/Fonts/NotoSans-Regular.ttf");
             player.collisionBoxes = new List<Box2>();
             var meta = JObject.Parse(File.ReadAllText(StoreImporter.MetaPath));
             foreach (JArray c in meta["colliders"])
