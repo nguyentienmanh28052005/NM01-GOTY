@@ -76,3 +76,6 @@ Claude outputs/
 
 # Sổ theo dõi tiến độ của agent
 .superpowers/
+
+# Kết quả tạm của công cụ xuất
+tools/three-export/out/

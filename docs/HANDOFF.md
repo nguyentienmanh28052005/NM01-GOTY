@@ -19,11 +19,11 @@
 |---|---|
 | 1. Khung project (asmdef, scene `Assets/HanaMart/Scenes/HanaMart24.unity`, Build Settings) | XONG |
 | 2. Material + rig Humanoid 4 nhân vật (`HanaMart/Setup Characters`) | XONG |
-| 3. Xuất cảnh Three.js → GLB | chưa |
+| 3. Xuất cảnh Three.js → glTF (`tools/three-export/export_store.py` → `Assets/HanaMart/Art/FromThree/store.gltf`) | XONG |
 | 4. Dựng cửa hàng từ GLB | chưa |
 | 5. Thay hàng hóa | chưa |
 | 6. Hậu kỳ AgX + Film | chưa |
 | 7. So sánh hình ảnh | chưa |
 
 ## Bước tiếp theo
-Task 3 trong plan.
+Task 4 trong plan.
