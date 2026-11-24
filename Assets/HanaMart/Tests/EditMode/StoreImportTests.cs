@@ -40,6 +40,12 @@ namespace HanaMart.Tests
             Assert.AreEqual(((JArray)meta["colliders"]).Count, n);
         }
 
+        [Test] public void HitsMatchMeta()
+        {
+            int n = root.GetComponentsInChildren<StoreMarker>(true).Count(m => m.kind == StoreMarker.Kind.Hit);
+            Assert.AreEqual((int)meta["counts"]["hits"], n, "glTFast đổi tên node trùng (H:fridgeDoor_0...) vẫn phải được đánh dấu");
+        }
+
         [Test] public void LightsMatchMeta()
         {
             var lights = root.GetComponentsInChildren<Light>(true);

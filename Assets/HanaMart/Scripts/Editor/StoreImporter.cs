@@ -49,6 +49,7 @@ namespace HanaMart.EditorTools
             var top = Enumerable.Range(0, root.transform.childCount).Select(i => root.transform.GetChild(i)).ToList();
             Walk(nodes, sceneNodes, top);
 
+            ReplaceProducts(root);
             AddColliders(root, (JArray)meta["colliders"]);
             AddProbe(root);
             ApplySceneSettings(scene, gltf, meta);
@@ -63,13 +64,17 @@ namespace HanaMart.EditorTools
                 var j = (JObject)nodes[(int)idxTok];
                 string name = (string)j["name"] ?? "";
                 Transform t = null;
-                for (int k = ptr; k < candidates.Count; k++) if (candidates[k].name == name) { t = candidates[k]; ptr = k + 1; break; }
+                for (int k = ptr; k < candidates.Count; k++) if (SameNode(candidates[k].name, name)) { t = candidates[k]; ptr = k + 1; break; }
                 if (t == null) continue;
                 Mark(t.gameObject, name, j["extras"] as JObject);
                 if (j["children"] is JArray ch)
                     Walk(nodes, ch, Enumerable.Range(0, t.childCount).Select(i => t.GetChild(i)).ToList());
             }
         }
+
+        /// glTFast thêm hậu tố _0, _1… cho node trùng tên.
+        static bool SameNode(string unityName, string gltfName) =>
+            unityName == gltfName || (unityName.Length > gltfName.Length + 1 && unityName.StartsWith(gltfName + "_") && unityName.Substring(gltfName.Length + 1).All(char.IsDigit));
 
         static void Mark(GameObject go, string name, JObject ex)
         {
@@ -139,6 +144,25 @@ namespace HanaMart.EditorTools
                     break;
                 default:
                     l.type = LightType.Directional; l.intensity = I; break;
+            }
+        }
+
+        /// Thay hình học hàng hóa Three.js bằng prefab asset siêu thị (giữ thuốc lá), co vừa ô (w,h,d) của bản gốc.
+        static void ReplaceProducts(GameObject root)
+        {
+            var cat = AssetDatabase.LoadAssetAtPath<ProductCatalog>(ProductExtractor.CatalogPath);
+            if (cat == null) return;
+            int i = 0;
+            foreach (var m in root.GetComponentsInChildren<StoreMarker>(true).Where(x => x.kind == StoreMarker.Kind.Product))
+            {
+                var ex = JObject.Parse(m.json); string type = (string)ex["type"];
+                var e = cat.Find(type); if (e == null || e.prefabs.Length == 0) continue;
+                var prefab = e.prefabs[(i++ * 7 + (int)ex["variant"]) % e.prefabs.Length];
+                Object.DestroyImmediate(m.GetComponent<MeshRenderer>()); Object.DestroyImmediate(m.GetComponent<MeshFilter>());
+                var inst = (GameObject)PrefabUtility.InstantiatePrefab(prefab, m.transform);
+                var size = ProductExtractor.PrefabSize(prefab);
+                float s = Mathf.Min((float)ex["w"] / size.x, (float)ex["h"] / size.y, (float)ex["d"] / size.z) * 0.98f;
+                inst.transform.localPosition = Vector3.zero; inst.transform.localRotation = Quaternion.identity; inst.transform.localScale = Vector3.one * s;
             }
         }
 

@@ -1,0 +1,125 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24f7538587edd8b47b066975891f4ae0, type: 3}
+  m_Name: ProductCatalog
+  m_EditorClassIdentifier: HanaMart.Runtime::HanaMart.Store.ProductCatalog
+  entries:
+  - threeType: ramenCup
+    displayName: "M\xEC ly"
+    prefabs:
+    - {fileID: 5870629962556490405, guid: 4ad3ac85259710441ab507b434bda78c, type: 3}
+    - {fileID: 3154391431030230953, guid: 37bca22d57bf2974e91e222e3299780a, type: 3}
+    - {fileID: 1873975157428386166, guid: b58d2dfa8429d12468c58c6040a7f99d, type: 3}
+    - {fileID: 752171837950702593, guid: 65666d7d7421d5c44b38b5412198edac, type: 3}
+    - {fileID: 8657933980217758238, guid: dee4d59a9dd66444ab95144aa434a13f, type: 3}
+    - {fileID: 5834028885170584369, guid: 787a8bdadd7604247a391896e71d80df, type: 3}
+    - {fileID: 8794015392751003162, guid: a9145d2410d5f9e42b32c3bbe067d751, type: 3}
+    - {fileID: 1308022011808910692, guid: 7edb88a9b19159d46af03264bccf2039, type: 3}
+  - threeType: ramenBag
+    displayName: "M\xEC g\xF3i"
+    prefabs:
+    - {fileID: 5870629962556490405, guid: 4ad3ac85259710441ab507b434bda78c, type: 3}
+    - {fileID: 3154391431030230953, guid: 37bca22d57bf2974e91e222e3299780a, type: 3}
+    - {fileID: 1873975157428386166, guid: b58d2dfa8429d12468c58c6040a7f99d, type: 3}
+    - {fileID: 752171837950702593, guid: 65666d7d7421d5c44b38b5412198edac, type: 3}
+    - {fileID: 8657933980217758238, guid: dee4d59a9dd66444ab95144aa434a13f, type: 3}
+    - {fileID: 5834028885170584369, guid: 787a8bdadd7604247a391896e71d80df, type: 3}
+    - {fileID: 8794015392751003162, guid: a9145d2410d5f9e42b32c3bbe067d751, type: 3}
+    - {fileID: 1308022011808910692, guid: 7edb88a9b19159d46af03264bccf2039, type: 3}
+  - threeType: chips
+    displayName: Snack
+    prefabs:
+    - {fileID: 8594752892570354906, guid: 6a10c83def9c4c949b36d5b41c895ed1, type: 3}
+    - {fileID: 8147941666207054043, guid: 1203cf69b6b551642a22b1d2e724337c, type: 3}
+    - {fileID: 3466439286469861669, guid: 65376dd246ea15047a215c6b289d7ea2, type: 3}
+    - {fileID: 7293612432514276544, guid: f5ff6e1790c463646affaf81d3715e01, type: 3}
+    - {fileID: 6660435787904358514, guid: b83e6cdd65b1e7541a027ed7cc590b56, type: 3}
+    - {fileID: 8994557910593660028, guid: 71e1181afb45c124aa8289f99ef000c1, type: 3}
+    - {fileID: 3866700523198669364, guid: 9d0c725d1275faa42998dd0b33ce2903, type: 3}
+    - {fileID: 4562746867666443162, guid: c3b3f3c25e6cd5c4baa46a1d47e54703, type: 3}
+  - threeType: kimbap
+    displayName: "C\u01A1m cu\u1ED9n"
+    prefabs:
+    - {fileID: 4856011347863456183, guid: 3528f1269fee3854da693a370a885079, type: 3}
+    - {fileID: 5144269289911760693, guid: 7f5f5b5d4676ed3448243142d50ec54e, type: 3}
+    - {fileID: 3239075913496184486, guid: 5b67bf321dbbb0c43a60e79ead1ee936, type: 3}
+    - {fileID: 4128292707067773436, guid: 9cff91294578a1a46a48f5973324d909, type: 3}
+    - {fileID: 7623445352216448801, guid: 637974455ceda244ca9f6f30b791bef9, type: 3}
+    - {fileID: 3610195351254125629, guid: b86f69669389b754db99931ad11738cc, type: 3}
+    - {fileID: 1083651926844373058, guid: 2c6daf70f52016f44864b2a351f05b9a, type: 3}
+    - {fileID: 674936555735504053, guid: d711f51cdddc33c4cb2f0b6eb7a2abb9, type: 3}
+  - threeType: lunch
+    displayName: "C\u01A1m h\u1ED9p"
+    prefabs:
+    - {fileID: 4856011347863456183, guid: 3528f1269fee3854da693a370a885079, type: 3}
+    - {fileID: 5144269289911760693, guid: 7f5f5b5d4676ed3448243142d50ec54e, type: 3}
+    - {fileID: 3239075913496184486, guid: 5b67bf321dbbb0c43a60e79ead1ee936, type: 3}
+    - {fileID: 4128292707067773436, guid: 9cff91294578a1a46a48f5973324d909, type: 3}
+    - {fileID: 7623445352216448801, guid: 637974455ceda244ca9f6f30b791bef9, type: 3}
+    - {fileID: 3610195351254125629, guid: b86f69669389b754db99931ad11738cc, type: 3}
+    - {fileID: 1083651926844373058, guid: 2c6daf70f52016f44864b2a351f05b9a, type: 3}
+    - {fileID: 674936555735504053, guid: d711f51cdddc33c4cb2f0b6eb7a2abb9, type: 3}
+  - threeType: banana
+    displayName: "B\xE1nh mandu"
+    prefabs:
+    - {fileID: 5983516402171835880, guid: e18dad9dea1c1bf43a75575bb9d9c303, type: 3}
+    - {fileID: 1982656957496231732, guid: 97fcb50c83001fd4d96828c2e074df6c, type: 3}
+    - {fileID: 7170461370884944479, guid: 932ae19e79810c74eb99b54214a7753c, type: 3}
+    - {fileID: 4166421433638337853, guid: 10e83ebe20556384a813f6c7726d34c4, type: 3}
+    - {fileID: 7603250171914268066, guid: 49c071d6b8f69834c81af530bfca31c8, type: 3}
+    - {fileID: 3002783624987748281, guid: 6631b6b4815275e4189eb43d11c42d79, type: 3}
+    - {fileID: 1354662038170081689, guid: 0dc9e8cfdcb965f41a80204622789725, type: 3}
+    - {fileID: 5632557869365574876, guid: 61283cd704a5fd044a9aa4f513a8dbdf, type: 3}
+  - threeType: can
+    displayName: "Th\u1ECBt"
+    prefabs:
+    - {fileID: 6182808788650190275, guid: 0eb51893779286d47b1ef9d6e347e414, type: 3}
+    - {fileID: 2385418939113866582, guid: 0e76475426d06104a9007c5c2e7834f5, type: 3}
+    - {fileID: 6748141197290374948, guid: a569037bb3c85294abf308dce4c60026, type: 3}
+    - {fileID: 4772150932710670878, guid: 59c0ce92bf8d810479956fa2fe184476, type: 3}
+    - {fileID: 5310569997657103340, guid: 227e764a73b5df84ab43c00b6ead89dd, type: 3}
+    - {fileID: 6048514675799598744, guid: 663f88e469988b84faefe00da440e6db, type: 3}
+    - {fileID: 4255981673068228867, guid: 926f9ce5f62763e41bdf0247116f59f0, type: 3}
+    - {fileID: 5136727018254294981, guid: c76ee72b72c496f448132c060edf902f, type: 3}
+  - threeType: bottle
+    displayName: Rau
+    prefabs:
+    - {fileID: 4489420382588695405, guid: c57b57202d5c3d34c884438a0b38ccda, type: 3}
+    - {fileID: 8589988370291615486, guid: f1611f5fd4ccbe249afc09be3c174a6d, type: 3}
+    - {fileID: 7253977699466593922, guid: 871fe6259f952894a8cb68baae24132b, type: 3}
+    - {fileID: 7272988251929946256, guid: b63cb01ba947e974888f8ca1f112c0dc, type: 3}
+    - {fileID: 3800123301861015722, guid: 25a98423693db974280844dd6889d388, type: 3}
+    - {fileID: 8688292408136048720, guid: 7a253aeb0dc168743bcc4c9109c718c7, type: 3}
+    - {fileID: 2875915041102430603, guid: ef812e3f28af5ba4ca1105f39c71cdae, type: 3}
+    - {fileID: 4373315704435451151, guid: afb028b81c382ff47b3b6a39f42b3f6d, type: 3}
+  - threeType: coffee
+    displayName: "Tr\xE1i c\xE2y"
+    prefabs:
+    - {fileID: 3321801590422879786, guid: 83fce53ca1db9eb468e2eecbb59520ab, type: 3}
+    - {fileID: 5993783467382114214, guid: 40c2cde92c3dd0d44b8df5e7cde04ad0, type: 3}
+    - {fileID: 1416836084591708337, guid: 13d466517e04d1a4995a0960dea0f514, type: 3}
+    - {fileID: 6101584085052230570, guid: 5ec3ad403d9d7e543bb464a5fe43b997, type: 3}
+    - {fileID: 8056564312554734976, guid: 0f5104eaaaf5df34e9eb7191095d112a, type: 3}
+    - {fileID: 7398993250189913804, guid: 270d7f66d76a86c4ba1abe6c643a5f75, type: 3}
+    - {fileID: 2093401668548796009, guid: 046bbff74f626b244ac3ba27320bf581, type: 3}
+    - {fileID: 5042897538799517179, guid: 8679e03246dbb4a499fe3a2c73b67c55, type: 3}
+  - threeType: soju
+    displayName: "\u0110\u1ED3 t\u01B0\u01A1i"
+    prefabs:
+    - {fileID: 7181814897389397692, guid: 41d09ee780b906f46b0068099bd28575, type: 3}
+    - {fileID: 5230552463040625651, guid: 8bd2f253ed4f6af4b809594da5a9d9ab, type: 3}
+    - {fileID: 4511172375387826635, guid: 0c4954479d421d040a58a9e95a78eae8, type: 3}
+    - {fileID: 822399844258943237, guid: 092a50d0c3ef40c4bbda58920829c7bf, type: 3}
+    - {fileID: 8345325914278584036, guid: 1860562bed387a44caccf7c2e9f8b70c, type: 3}
+    - {fileID: 6694693115985168235, guid: 03cbc9ca7f7ba2c43b34273c4334f09b, type: 3}
+    - {fileID: 5896657329991338620, guid: 507f1094c4b3c93489aa0938a07b30e0, type: 3}
+    - {fileID: 8075252239655811201, guid: cfce6ecf60a76e14295134849eebe968, type: 3}
