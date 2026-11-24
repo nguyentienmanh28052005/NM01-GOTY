@@ -3,6 +3,7 @@
     "rootNamespace": "HanaMart.EditorTools",
     "references": [
         "HanaMart.Runtime",
+        "Unity.InputSystem",
         "glTFast",
         "glTFast.Editor",
         "Unity.RenderPipelines.Core.Runtime",

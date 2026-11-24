@@ -9,17 +9,50 @@ import socket
 import struct
 import sys
 import time
+import urllib.error
+import urllib.request
 
 
 def call(command, params=None, timeout=45):
+    # The editor can switch between stdio and its installed HTTP MCP server.
+    # Select the actual instance by the full project hash (not the current/default session).
+    http = "http://127.0.0.1:8090"
+    try:
+        with urllib.request.urlopen(http + "/api/instances", timeout=2) as response:
+            instances = json.load(response).get("instances", [])
+    except (OSError, ValueError):
+        instances = []
+    target = [i for i in instances if i.get("project") == "NM01-GOTY" and i.get("hash") == "fccbaeec7da3b4aa"]
+    if len(target) == 1:
+        payload = json.dumps({"type": command, "params": params or {}, "unity_instance": "NM01-GOTY@" + target[0]["hash"]}).encode()
+        request = urllib.request.Request(http + "/api/command", data=payload, headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return json.load(response)
     project = (Path(__file__).resolve().parents[1] / "Assets").as_posix().casefold()
-    statuses = [json.loads(p.read_text(encoding="utf-8-sig"))
-                for p in (Path.home() / ".unity-mcp").glob("unity-mcp-status-*.json")]
-    matches = [s for s in statuses if s.get("project_path", "").replace("\\", "/").casefold() == project]
-    if len(matches) != 1:
-        raise RuntimeError(f"Expected one bridge for {project}; found {len(matches)}")
     deadline = time.monotonic() + timeout
-    with socket.create_connection(("127.0.0.1", matches[0]["unity_port"]), 3) as sock:
+    # Domain reload briefly removes the status file/listener. Retry connection only;
+    # never replay a command after sending it, since it may mutate the editor.
+    sock = None
+    for attempt in range(20):
+        statuses = []
+        for p in (Path.home() / ".unity-mcp").glob("unity-mcp-status-*.json"):
+            try:
+                statuses.append(json.loads(p.read_text(encoding="utf-8-sig")))
+            except (OSError, ValueError):
+                continue
+        matches = [s for s in statuses if s.get("project_path", "").replace("\\", "/").casefold() == project]
+        if len(matches) > 1:
+            raise RuntimeError(f"More than one bridge for {project}")
+        try:
+            if matches:
+                sock = socket.create_connection(("127.0.0.1", matches[0]["unity_port"]), 1)
+                break
+        except OSError:
+            pass
+        time.sleep(1)
+    if sock is None:
+        raise TimeoutError(f"No ready bridge for {project} after 20 connection attempts")
+    with sock:
         sock.settimeout(timeout)
         welcome = bytearray()
         for _ in range(512):
