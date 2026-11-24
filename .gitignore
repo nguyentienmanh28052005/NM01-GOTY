@@ -79,3 +79,6 @@ Claude outputs/
 
 # Kết quả tạm của công cụ xuất
 tools/three-export/out/
+
+# Ảnh chụp Unity tạm thời (so sánh xem docs/visual/compare)
+docs/visual/unity/

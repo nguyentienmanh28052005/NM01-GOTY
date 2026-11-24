@@ -23,7 +23,7 @@
 | 4. Dựng cửa hàng từ glTF (`HanaMart/Build Store`) | XONG |
 | 5. Thay hàng hóa (`HanaMart/Extract Products` → `Assets/HanaMart/Data/ProductCatalog.asset`) | XONG |
 | 6. Hậu kỳ AgX + Film (`HanaMart/Setup Rendering`, shader `HanaMart/AgxFilm`, `FilmSettings` trên camera) | XONG |
-| 7. So sánh hình ảnh | chưa |
+| 7. So sánh hình ảnh (`docs/visual/compare/report.md`) | XONG |
 
 ## Bước tiếp theo
-Task 7 trong plan.
+Kế hoạch 1 xong. Bước tiếp: viết Kế hoạch 2 (Người chơi & tương tác) theo lộ trình cuối plan 1.

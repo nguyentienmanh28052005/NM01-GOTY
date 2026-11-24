@@ -20,11 +20,33 @@ namespace HanaMart.EditorTools
         const string MatDir = "Assets/HanaMart/Art/Materials/Converted";
         const float StoreHeight = 3.0f;
 
+        public const string ProbeCubemapPath = "Assets/HanaMart/Art/FromThree/StoreProbe.cubemap";
+
+        /// Chụp cubemap tại vị trí probe (tắt probe khi chụp) rồi gán làm customBakedTexture.
+        [MenuItem("HanaMart/Bake Store Probe")]
+        public static void BakeProbe()
+        {
+            var probe = Object.FindObjectsByType<ReflectionProbe>(FindObjectsSortMode.None).FirstOrDefault(x => x.name == "StoreProbe");
+            if (probe == null) { Debug.LogError("Không thấy StoreProbe"); return; }
+            probe.enabled = false;
+            var camGo = new GameObject("ProbeCam") { hideFlags = HideFlags.HideAndDontSave };
+            var cam = camGo.AddComponent<Camera>(); cam.transform.position = probe.transform.position;
+            cam.nearClipPlane = 0.05f; cam.farClipPlane = 100f; cam.allowHDR = true; cam.clearFlags = CameraClearFlags.SolidColor; cam.backgroundColor = Color.black;
+            var cube = new Cubemap(256, TextureFormat.RGBAHalf, true);
+            cam.RenderToCubemap(cube);
+            Object.DestroyImmediate(camGo);
+            var old = AssetDatabase.LoadAssetAtPath<Cubemap>(ProbeCubemapPath);
+            if (old != null) { EditorUtility.CopySerialized(cube, old); cube = old; } else AssetDatabase.CreateAsset(cube, ProbeCubemapPath);
+            probe.mode = ReflectionProbeMode.Custom; probe.customBakedTexture = cube; probe.enabled = true;
+            EditorUtility.SetDirty(probe); AssetDatabase.SaveAssets();
+        }
+
         [MenuItem("HanaMart/Build Store")]
         public static void BuildAndSave()
         {
             var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             Build(scene);
+            BakeProbe();
             EditorSceneManager.SaveScene(scene);
         }
 
@@ -110,7 +132,8 @@ namespace HanaMart.EditorTools
                 rr.shadowCastingMode = ex != null && (bool?)ex["castShadow"] == true ? ShadowCastingMode.On : ShadowCastingMode.Off;
         }
 
-        static Color Col(JToken t, float k = 1f) => new Color((float)t[0] * k, (float)t[1] * k, (float)t[2] * k);
+        /// Màu Three.js (r152+) là tuyến tính; Light.color / RenderSettings của Unity nhận màu sRGB.
+        static Color Col(JToken t, float k = 1f) => new Color((float)t[0] * k, (float)t[1] * k, (float)t[2] * k).gamma;
 
         static void AddLight(GameObject go, JObject ex)
         {
@@ -130,15 +153,15 @@ namespace HanaMart.EditorTools
             switch (kind)
             {
                 case "Point":
-                    l.type = LightType.Point; l.range = dist > 0 ? dist : 12f; l.intensity = I / Mathf.PI; break;
+                    l.type = LightType.Point; l.range = dist > 0 ? dist : 25f; l.intensity = I / Mathf.PI; break; // distance 0 của Three.js = không giới hạn
                 case "Spot":
-                    l.type = LightType.Spot; l.range = dist > 0 ? dist : 15f; l.intensity = I / Mathf.PI;
+                    l.type = LightType.Spot; l.range = dist > 0 ? dist : 25f; l.intensity = I / Mathf.PI;
                     float a = (float)ex["angle"] * Mathf.Rad2Deg * 2f; l.spotAngle = a; l.innerSpotAngle = a * (1f - ((float?)ex["penumbra"] ?? 0f));
                     if (ex["target"] is JArray tg) holder.transform.LookAt(ThreeCoords.ToUnity((float)tg[0], (float)tg[1], (float)tg[2]));
                     break;
                 case "RectArea": // URP không có đèn vùng realtime → đèn spot rộng chiếu theo hướng -Z của Three.js
                     l.type = LightType.Spot; l.spotAngle = 150f; l.innerSpotAngle = 40f; l.range = 8f;
-                    l.intensity = I * (float)ex["width"] * (float)ex["height"] / Mathf.PI;
+                    l.intensity = I * (float)ex["width"] * (float)ex["height"] / Mathf.PI * 1.2f; // hệ số chỉnh theo ảnh so sánh (Task 7)
                     holder.transform.localRotation = Quaternion.Euler(0, 180, 0);
                     var ar = holder.AddComponent<AreaLightInfo>(); ar.width = (float)ex["width"]; ar.height = (float)ex["height"]; ar.threeIntensity = I;
                     break;
@@ -185,11 +208,12 @@ namespace HanaMart.EditorTools
             var go = new GameObject("StoreProbe"); go.transform.SetParent(root.transform, false);
             go.transform.localPosition = ThreeCoords.ToUnity(6.2f, 1.55f, 4.0f);
             var p = go.AddComponent<ReflectionProbe>();
-            p.mode = ReflectionProbeMode.Realtime; p.refreshMode = ReflectionProbeRefreshMode.ViaScripting; p.timeSlicingMode = ReflectionProbeTimeSlicingMode.NoTimeSlicing;
+            // Probe "Custom": cubemap chụp sẵn lúc đủ đèn (như captureProbe bản Three.js); probe realtime làm Forward+ của URP lỗi trong Editor
+            p.mode = ReflectionProbeMode.Custom;
+            p.customBakedTexture = AssetDatabase.LoadAssetAtPath<Cubemap>(ProbeCubemapPath);
             p.boxProjection = true; p.size = new Vector3(12, 3, 8);
             p.center = ThreeCoords.ToUnity(6f, 1.5f, 4f) - go.transform.localPosition;
             p.resolution = 256; p.hdr = true; p.importance = 1;
-            go.AddComponent<ProbeRefresh>();
         }
 
         static void ApplySceneSettings(Scene scene, JObject gltf, JObject meta)
@@ -245,7 +269,11 @@ namespace HanaMart.EditorTools
 
                 var baseTex = m.HasProperty("baseColorTexture") ? m.GetTexture("baseColorTexture") : null;
                 var st = m.HasProperty("baseColorTexture_ST") ? m.GetVector("baseColorTexture_ST") : new Vector4(1, 1, 0, 0);
-                mat.SetColor("_BaseColor", m.HasProperty("baseColorFactor") ? m.GetColor("baseColorFactor") : Color.white);
+                // glTF lưu baseColorFactor ở không gian tuyến tính; _BaseColor của URP nhận màu sRGB
+                var bcf = j?["pbrMetallicRoughness"]?["baseColorFactor"] as JArray;
+                var baseCol = bcf != null ? new Color((float)bcf[0], (float)bcf[1], (float)bcf[2]).gamma : Color.white;
+                baseCol.a = bcf != null ? (float)bcf[3] : 1f;
+                mat.SetColor("_BaseColor", baseCol);
                 mat.SetTexture("_BaseMap", baseTex);
                 mat.SetTextureScale("_BaseMap", new Vector2(st.x, st.y)); mat.SetTextureOffset("_BaseMap", new Vector2(st.z, st.w));
 
