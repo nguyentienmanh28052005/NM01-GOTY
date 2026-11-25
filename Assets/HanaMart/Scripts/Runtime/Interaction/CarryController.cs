@@ -19,6 +19,7 @@ namespace HanaMart.Interaction
             public bool picking;
         }
         public ProductCatalog catalog;
+        public string FoodType { get; set; } = "kimbap";
         public bool defaultInteractions = true;
         public string Kind { get; private set; }
         public readonly List<Dropped> DroppedItems = new List<Dropped>();
@@ -30,6 +31,7 @@ namespace HanaMart.Interaction
         Interactor interactor;
         Transform hand;
         GameObject held, ghost, ring, arms;
+        readonly HashSet<GameObject> movingItems = new();
         Vector3 target;
         float placingTime, carryAnim;
         readonly Dictionary<string, StoreMarker> refs = new Dictionary<string, StoreMarker>();
@@ -86,7 +88,7 @@ namespace HanaMart.Interaction
             else if(kind=="trash") Primitive(root.transform,PrimitiveType.Sphere,new Vector3(.4f,.28f,.4f),trash,Vector3.zero);
             else
             {
-                var entry=catalog?catalog.Find("kimbap"):null;
+                var entry=catalog?catalog.Find(FoodType):null;
                 if(entry!=null && entry.prefabs.Length>0)
                 {
                     var product=Instantiate(entry.prefabs[0],root.transform); var bounds=new Bounds();bool first=true;
@@ -182,6 +184,7 @@ namespace HanaMart.Interaction
             if(string.IsNullOrEmpty(Kind)||Busy)return;
             string kind=Kind;var visual=Visual(kind,false);visual.transform.position=hand.position;
             var destination=threeTarget+Vector3.up*HalfHeight(kind);SetCarry(null);
+            movingItems.Add(visual);
             StartCoroutine(DropArc(kind,visual,destination));
         }
         IEnumerator DropArc(string kind,GameObject visual,Vector3 destination)
@@ -193,6 +196,7 @@ namespace HanaMart.Interaction
             var collider=hit.AddComponent<BoxCollider>();collider.isTrigger=true;collider.size=new Vector3(.6f,.5f,.6f);
             var marker=hit.AddComponent<StoreMarker>();marker.kind=StoreMarker.Kind.Hit;marker.key="H:dropped";marker.json=JsonUtility.ToJson(new DropInfo{label="Nhặt: "+DisplayName(kind)});
             var record=new Dropped{kind=kind,mesh=visual,hit=hit};DroppedItems.Add(record);Placed?.Invoke(kind);
+            movingItems.Remove(visual);
             var scale=visual.transform.localScale;float squash=kind=="boxRamen"||kind=="boxMilk"||kind=="trash" ? .82f : .9f;
             for(float t=0;t<.22f;t+=Time.deltaTime){if(!visual || record.picking)yield break;float k=Mathf.Clamp01(t/.22f),sy=1+(squash-1)*Mathf.Sin(k*Mathf.PI)*(1-k*.4f);visual.transform.localScale=Vector3.Scale(scale,new Vector3(1+(1-sy)*.5f,sy,1+(1-sy)*.5f));yield return null;}
             if(visual && !record.picking)visual.transform.localScale=scale;
@@ -201,13 +205,26 @@ namespace HanaMart.Interaction
         IEnumerator Pickup(Dropped dropped)
         {
             Busy=true;dropped.picking=true;DroppedItems.Remove(dropped);Destroy(dropped.hit);
+            movingItems.Add(dropped.mesh);
             var from=ThreeCoords.ToUnity(dropped.mesh.transform.position);var scale=dropped.mesh.transform.localScale;
             for(float t=0;t<.18f;t+=Time.deltaTime){dropped.mesh.transform.position=ThreeCoords.ToUnity(Placement.Arc(from,ThreeCoords.ToUnity(hand.position),t/.18f,.08f));dropped.mesh.transform.localScale=scale*Mathf.Lerp(1,.6f,t/.18f);yield return null;}
-            Destroy(dropped.mesh);SetCarry(dropped.kind);Busy=false;PickedUp?.Invoke(dropped.kind);
+            movingItems.Remove(dropped.mesh);Destroy(dropped.mesh);SetCarry(dropped.kind);Busy=false;PickedUp?.Invoke(dropped.kind);
+        }
+        public void ResetCarry()
+        {
+            StopAllCoroutines();
+            foreach (var moving in movingItems) if (moving) Destroy(moving);
+            movingItems.Clear();
+            foreach (var item in DroppedItems) { if (item.mesh) Destroy(item.mesh); if (item.hit) Destroy(item.hit); }
+            DroppedItems.Clear();
+            Busy = false;
+            FoodType = "kimbap";
+            SetCarry(null);
         }
         void OnDestroy()
         {
             if(interactor)interactor.Pressed-=OnPressed;CancelPlacing();
+            foreach(var moving in movingItems)if(moving)Destroy(moving);
             foreach(var item in DroppedItems){if(item.mesh)Destroy(item.mesh);if(item.hit)Destroy(item.hit);}
             foreach(var m in owned)if(m)Destroy(m);
         }

@@ -21,11 +21,13 @@ Mỗi task bắt đầu bằng test có `[Timeout]` và vòng lặp hữu hạn.
 
 161/161 EditMode. MCP Play `Run Checkout Visit` xác nhận khách áo mưa hợp lệ bước vào, kích hoạt chào, đặt và quét hai mì ly, trả ₩3.000, rời tiệm và dọn đồ. Điều phối lò và các biến cố nhận từ `SceneAction`/`RingRequested` ở Task 3–4.
 
-## Task 3 — Nhiệm vụ và dị thường
+## Task 3 — Nhiệm vụ và dị thường (xong)
 
 - Nối `Interaction`, `CarryController`, `StoreDoors`, `AudioBank` với trạng thái ca. Tắt tương tác thử nghiệm mặc định khi có điều phối ca. Dùng timer theo thời gian game giống `later`.
 - Dịch bổ sung hàng, nhiệt độ tủ mát, lau sàn, rác và hẻm, lò, nhật ký, camera, gọi điện, rơi đồ và dị thường môi trường. Giữ điểm đặt tay, các mốc lò 0.55, 0.95, 1.3 và 6 giây, giữ E đếm 10.
 - Test trigger thực, hành động bị chặn theo trạng thái, refresh nhãn khi dùng đồ, phân biệt cửa đang mở và cảnh báo từ quầy. Chạy Play kiểm một vòng nhận việc, hoàn thành và reload checkpoint.
+
+171/171 EditMode. `Run Shift Jobs` chạy qua ray thật ở nhiệm vụ đầu ca, 18 món lên kệ, lò trả món nóng và retry giữ đúng trạng thái stock. Lượt checkout chạy lại đạt. Cờ luật nguy hiểm và kết thúc nối ở Task 4.
 
 ## Task 4 — Luật, bẫy, Giờ Đỏ và kết thúc
 

@@ -89,6 +89,8 @@ namespace HanaMart.Store
             }
             else if (id == "freezer" && Freezer != null) StartCoroutine(OpenFreezer());
         }
+
+        public bool FridgeIsOpen(StoreMarker hit) => hit && fridgeHits.TryGetValue(hit, out var leaf) && leaf.motor.target > .5f;
         IEnumerator OpenFreezer()
         {
             Freezer.motor.target = 1;

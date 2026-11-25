@@ -306,6 +306,7 @@ namespace HanaMart.Shift
         {
             PlayClip("chime");
             ghostDoorTime = 1.8f;
+            ghostDoorFraction = .35f;
             greetingFor = null;
             greeting.Open(ghost: true);
         }
@@ -329,7 +330,7 @@ namespace HanaMart.Shift
             }
             if (doors)
             {
-                doors.Front.motor.target = ghostDoorTime > 0 ? .35f : near ? 1 : 0;
+                doors.Front.motor.target = ghostDoorTime > 0 ? ghostDoorFraction : near ? 1 : 0;
                 ghostDoorTime = Mathf.Max(0, ghostDoorTime - dt);
             }
             switch (greeting.Tick(dt, greet, greetingFor != null && greetingFor.Actor.alive))

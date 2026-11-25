@@ -65,6 +65,7 @@ namespace HanaMart.Shift
                     ShowDialog(guest.Profile.Name, guest.Profile.Line, new Choice("Vâng, quý khách đợi chút ạ.", () =>
                     {
                         if (guest.Items.Count > 0) guest.Items[0].SetActive(false);
+                        carry.FoodType = guest.Profile.Items[0];
                         carry.SetCarry("heat");
                         SceneAction?.Invoke("heatOrdered");
                     }));

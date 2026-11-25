@@ -9,9 +9,9 @@ namespace HanaMart.Shift
     public sealed class ShiftHud : MonoBehaviour
     {
         ShiftGame game;
-        GameObject root, dialog;
+        GameObject root, dialog, paper;
         TMP_FontAsset font;
-        TextMeshProUGUI status, subtitle, greet, lines;
+        TextMeshProUGUI status, subtitle, greet, lines, page;
 
         void Start()
         {
@@ -40,6 +40,18 @@ namespace HanaMart.Shift
             lines = Text(dialog.transform, "Lời thoại và lựa chọn", new Vector2(.5f, .5f), Vector2.zero, new Vector2(670, 211),
                 21, TextAlignmentOptions.TopLeft);
             dialog.SetActive(false);
+            paper = new GameObject("Giấy", typeof(RectTransform), typeof(Image));
+            paper.transform.SetParent(root.transform, false);
+            SetRect(paper.GetComponent<RectTransform>(), new Vector2(.5f, .5f), Vector2.zero, new Vector2(860, 620));
+            paper.GetComponent<Image>().color = new Color(.92f, .88f, .79f, .98f);
+            paper.GetComponent<Image>().raycastTarget = false;
+            page = Text(paper.transform, "Nội dung giấy", new Vector2(.5f, .5f), Vector2.zero, new Vector2(794, 568),
+                19, TextAlignmentOptions.TopLeft);
+            page.color = new Color(.13f, .12f, .10f);
+            page.enableAutoSizing = true;
+            page.fontSizeMin = 11;
+            page.fontSizeMax = 19;
+            paper.SetActive(false);
         }
 
         void LateUpdate()
@@ -47,7 +59,9 @@ namespace HanaMart.Shift
             if (!root || game.Run == null) return;
             status.text = $"{game.Run.Clock.Display}\n{game.Run.Progress.Strikes}/3";
             subtitle.text = game.Subtitle;
-            greet.text = game.GreetingTime > 0 && game.Dialogue == null ? "[G] Chào khách" : "";
+            greet.text = game.GreetingTime > 0 && game.Dialogue == null && game.PaperTitle == null ? "[G] Chào khách" : "";
+            paper.SetActive(game.PaperTitle != null);
+            if (paper.activeSelf) page.text = $"<color=#ab1826><b>{game.PaperTitle}</b></color>\n\n{game.PaperText}\n\n[Esc] Đóng";
             dialog.SetActive(game.Dialogue != null);
             if (!dialog.activeSelf) return;
             lines.text = $"<color=#7dffe1><b>{game.Speaker}</b></color>\n{game.Dialogue}\n";

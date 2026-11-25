@@ -11,6 +11,7 @@ using UnityEngine.InputSystem;
 
 namespace HanaMart.Shift
 {
+    [DefaultExecutionOrder(10)]
     [RequireComponent(typeof(PlayerController), typeof(Interactor), typeof(CarryController))]
     public sealed partial class ShiftGame : MonoBehaviour
     {
@@ -51,7 +52,6 @@ namespace HanaMart.Shift
         VisitDirector director;
         float subtitleUntil;
         string subtitle;
-        bool phoneRinging;
 
         void Start()
         {
@@ -74,6 +74,7 @@ namespace HanaMart.Shift
             Run.EventReached += OnStoryEvent;
             Run.CheckpointSaved += (hour, reduced) => Say(reduced ? "Một giờ không vi phạm — bớt 1 cảnh cáo" :
                 $"Đã lưu · {ShiftClock.Format(hour * 60)}", 3);
+            InitializeJobs();
             NewShift();
         }
 
@@ -87,7 +88,8 @@ namespace HanaMart.Shift
             if (retry) Run.Retry();
             else { Run.NewShift(); TotalSold = 0; }
             director.Reset(Run.Progress.SavedHour > 0);
-            Dead = Ended = phoneRinging = false;
+            Dead = Ended = false;
+            ResetJobs(retry);
             CloseDialog();
             player.Motor.pos = new Vector2(.85f, 4.4f);
             player.Motor.vel = Vector2.zero;
@@ -105,14 +107,16 @@ namespace HanaMart.Shift
         {
             if (Run == null) return;
             ReadDialogInput();
+            ReadPaperInput();
             if (Dead || Ended) return;
             float dt = Time.deltaTime;
-            Run.Tick(dt, dialogOpen: Dialogue != null);
+            Run.Tick(dt, dialogOpen: Dialogue != null, paperOpen: PaperTitle != null);
             double minute = Run.Clock.Minutes;
             var next = Run.Timeline.NextAnchor(minute, .5, 60);
             var kind = director.Tick(dt, minute, LiveVisitors(), next?.Minute,
-                HasFlag("red") || HasFlag("blackout"), phoneRinging, Run.Progress);
+                HasFlag("red") || HasFlag("blackout"), phone.Ringing, Run.Progress);
             if (kind != null) SpawnVisit(kind);
+            UpdateJobs(dt);
             UpdateFrontDoor(dt, greetInput?.WasPressedThisFrame() == true);
         }
 
@@ -125,7 +129,9 @@ namespace HanaMart.Shift
 
         void Pressed(string id)
         {
-            if (id == "pos" && Dialogue == null && !Dead && !Ended) ServeAtCounter();
+            if (Dialogue != null || PaperTitle != null || Dead || Ended) return;
+            if (id == "pos") ServeAtCounter();
+            else UseJob(id);
         }
 
         void ReadDialogInput()
@@ -162,7 +168,7 @@ namespace HanaMart.Shift
         {
             Speaker = Dialogue = null;
             Options = Array.Empty<Choice>();
-            SetGameplay(!Dead && !Ended);
+            SetGameplay(!Dead && !Ended && PaperTitle == null);
         }
 
         void SetGameplay(bool enabled)
@@ -172,7 +178,6 @@ namespace HanaMart.Shift
             interactor.Enabled = enabled;
         }
 
-        public void SetPhoneRinging(bool value) => phoneRinging = value;
         public bool HasFlag(string key) => Run.Progress.Flags.TryGetValue(key, out int value) && value != 0;
 
         int RandomIndex(int count) => random.Next(count);
@@ -199,6 +204,7 @@ namespace HanaMart.Shift
             Run.Progress.RecordDeath(rule);
             Run.Clock.Running = false;
             Dead = true;
+            ClosePaper();
             CloseDialog();
             player.Rumble(1, 1, .9f);
             Died?.Invoke(rule, reason);
@@ -218,9 +224,14 @@ namespace HanaMart.Shift
 
         void OnDestroy()
         {
-            if (interactor) interactor.Pressed -= Pressed;
+            if (interactor)
+            {
+                interactor.Pressed -= Pressed;
+                interactor.Holding -= Hold;
+            }
             ClearGuests();
             ReleaseCheckoutMaterials();
+            ReleaseEnvironment();
         }
     }
 }

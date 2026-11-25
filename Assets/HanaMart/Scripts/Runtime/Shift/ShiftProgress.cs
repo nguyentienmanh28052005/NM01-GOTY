@@ -9,7 +9,6 @@ namespace HanaMart.Shift
             "double", "box13", "alleyCall", "alleyPending", "chase", "clock444", "cctvGhost", "cctvGlitch",
             "delivery", "strangerIn", "red", "blackEntry", "blackout",
         };
-        static readonly HashSet<int> RulesWithNotes = new() { 3, 5, 7, 9, 10, 12, 14, 15, 16, 17, 18, 19, 20, 21 };
         static readonly Dictionary<int, string> MercyByRule = new()
         {
             { 15, "noShadow" }, { 3, "raincoatBad" }, { 18, "childMom" },
@@ -45,7 +44,7 @@ namespace HanaMart.Shift
         public void RecordDeath(int rule)
         {
             ++DeathCount;
-            if (RulesWithNotes.Contains(rule)) LearnedRules.Add(rule);
+            if (RuleBook.HasNote(rule)) LearnedRules.Add(rule);
             RecordMercy("r" + rule);
             if (MercyByRule.TryGetValue(rule, out var scenario)) RecordMercy(scenario);
         }
