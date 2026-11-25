@@ -16,7 +16,7 @@ Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ b
 - Spec (đã duyệt): `docs/superpowers/specs/2026-11-25-hanamart24-unity-port-design.md`
 - Kế hoạch 1 (XONG): `docs/superpowers/plans/2026-11-25-hanamart24-p1-foundation.md`
 - Kế hoạch 2 (XONG): `docs/superpowers/plans/2026-11-25-hanamart24-p2-player.md`.
-- Kế hoạch 3 (ĐANG LÀM): `docs/superpowers/plans/2026-11-25-hanamart24-p3-actors.md`.
+- Kế hoạch 3 (XONG): `docs/superpowers/plans/2026-11-25-hanamart24-p3-actors.md`.
 - Kế hoạch 4–7 đã viết: `docs/superpowers/plans/2026-11-25-hanamart24-p4-shift.md`, `2026-11-25-hanamart24-p5-death-scenes.md`, `2026-11-25-hanamart24-p6-interface.md`, `2026-11-25-hanamart24-p7-acceptance.md`.
 - Sổ tiến độ + mọi quyết định ("Ruling"): `.superpowers/sdd/*/progress.md` (git-ignored, đọc trực tiếp).
 - So sánh hình ảnh: `docs/visual/compare/report.md` + ảnh `docs/visual/compare/*.jpg`.
@@ -71,7 +71,10 @@ Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ b
   Toàn assembly **115/115 GREEN**, job `b73ac9a32d3446c5aae213b6b76fd151`.
   **Task 4 XONG**: `StoreNavigation` port lưới .15 m, bán kính .24 m, A* và các cổng theo `nav.js`, bỏ collider cửa trước/sau khỏi grid lúc tạo theo `game.js`. `Actor.TryMoveTo` dùng lưới, `CarryController` nối `Placement` với cùng `Walkable`. Tuyến bất khả thi dừng như yêu cầu tránh xuyên tường, bỏ fallback đi thẳng của JS. Không thay va chạm người chơi.
   `HanaMart/Build Store Navigation` bake `Data/StoreNavigation.asset` từ các ô đã chừa .24 m. Unity NavMesh dùng thêm inset .01 m, load/unload cùng PlayerController. NPC đi theo lưới để giữ quy tắc ô và điểm đích của JS. Ở cửa hẻm z=−4.6, x=1.88 mở và x=2.14 bị vật cản theo phép chạy trực tiếp `nav.js` với `store_meta.json`.
-  RED 7/8 (`dda3e004cec74c1b8006f7c976602cab`) → **124/124 EditMode GREEN** (`a44961fc891b4b6198260524a9b9ba2e`), gồm tuyến NavMesh hoàn chỉnh từ vỉa hè ra hẻm qua cả ba cửa và điểm đặt ngoài phố. **Tiếp theo Task 5**: kiểm tích hợp NPC thực tế và cleanup 60 s. Kế hoạch 4–7 mới có tài liệu, chưa có ca 00:00→06:00.
+  RED 7/8 (`dda3e004cec74c1b8006f7c976602cab`) → **124/124 EditMode GREEN** (`a44961fc891b4b6198260524a9b9ba2e`), gồm tuyến NavMesh hoàn chỉnh từ vỉa hè ra hẻm qua cả ba cửa và điểm đặt ngoài phố.
+  **Task 5 XONG**: test 60 s cho cả bốn Humanoid bắt một bước cắt ô góc và sót mesh tạm khi hủy trong EditMode. Sửa bằng kiểm từng cạnh ô khi làm mượt đường, đi tới đúng waypoint, giải phóng tài nguyên rõ ràng khi Remove ở EditMode. RED `83ad4efac6b14e4bb591e5324ba0d8ed` → **128/128 EditMode GREEN**, job `beca836aab4f4578aca1ea83dc01a30b`.
+  MCP `HanaMart/QA/Run Actor Route` chạy Play 60.001 s, 5704 khung, khách áo mưa vàng đi 19.45 m tới (2.15, −7), không ô bị chặn nào và log 0 cảnh báo/lỗi. Bốn ảnh ở `docs/visual/characters/actor-route.jpg`. QA mở hai cửa trong Play, chưa có đạo diễn tự mở cửa cho khách. Hai scene được bảo vệ không có diff.
+  **Tiếp theo Kế hoạch 4 Task 1**: đồng hồ, lịch, checkpoint. Kế hoạch 4–7 đã viết, chưa có ca 00:00→06:00.
 
 ## 6. Việc còn lại sau đó (kế hoạch 3–7, viết chi tiết khi bắt đầu)
 3. Nhân vật `Actor` (mặt nạ quần áo + nhuộm, áo mưa vỏ phồng, trẻ em 0.68, biến hình xương + material reveal, NavMesh, clip `Female Walk` retarget, đứng/thở thủ tục).

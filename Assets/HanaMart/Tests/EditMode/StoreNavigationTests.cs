@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using HanaMart.Actors;
 using HanaMart.EditorTools;
 using HanaMart.Interaction;
 using HanaMart.Player;
@@ -95,6 +96,41 @@ namespace HanaMart.Tests
                 Assert.AreEqual(NavMeshPathStatus.PathComplete, path.status);
             }
             finally { instance.Remove(); }
+        }
+
+        [TestCase(0)] [TestCase(1)] [TestCase(2)] [TestCase(3)]
+        public void ActorFollowsStreetToAlleyAndCleansUpAfterSixtySeconds(int model)
+        {
+            var grid = OriginalLayout();
+            var catalog = AssetDatabase.LoadAssetAtPath<ActorCatalog>("Assets/HanaMart/Data/ActorCatalog.asset");
+            int baseline =  Resources.FindObjectsOfTypeAll<Mesh>().Count(mesh => mesh.name == "Actor floor contact");
+            var actor = Actor.Spawn(catalog, new ActorOptions { modelIndex = model, coat = model == 2 ? "child" : "padding" },
+                new Vector3(3.1f, 0, 11.6f));
+            try
+            {
+                var end = new Vector2(2.15f, -7);
+                Assert.IsTrue(actor.TryMoveTo(grid, end));
+                float strideWhileWalking = 0;
+                for (int frame = 0; frame < 1200; ++frame)
+                {
+                    var start = new Vector2(actor.pos.x, actor.pos.z);
+                    actor.Advance(.05f);
+                    var next = new Vector2(actor.pos.x, actor.pos.z);
+                    float distance = Vector2.Distance(next, start);
+                    Assert.That(distance, Is.LessThanOrEqualTo(actor.speed * .05f + .0001f));
+                    Assert.IsTrue(grid.LineFree(start, next), $"Frame {frame}: {start:F4} → {next:F4}");
+                    if (actor.moving) strideWhileWalking += distance;
+                }
+                Assert.Greater(strideWhileWalking, Vector2.Distance(new Vector2(3.1f, 11.6f), end));
+                Assert.That(Vector2.Distance(new Vector2(actor.pos.x, actor.pos.z), end), Is.LessThan(.06f));
+                Assert.That(actor.Motion.blend, Is.LessThan(.001f));
+                var stationary = actor.Model.transform.localPosition;
+                for (int frame = 0; frame < 30; ++frame) actor.Advance(.05f);
+                Assert.That(Vector3.Distance(stationary, actor.Model.transform.localPosition), Is.LessThan(.0001f));
+            }
+            finally { actor.Remove(); }
+            Assert.IsTrue(actor == null);
+            Assert.AreEqual(baseline, Resources.FindObjectsOfTypeAll<Mesh>().Count(mesh => mesh.name == "Actor floor contact"));
         }
     }
 }

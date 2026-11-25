@@ -10,7 +10,7 @@ namespace HanaMart.Store
     {
         public const float CellSize = .15f;
         const float Radius = .24f;
-        const float X0 = -6, Z0 = -9.6f;
+        const double X0 = -6, Z0 = -9.6, CellMeters = .15;
         const int Width = 160, Depth = 171;
         const int NearestLimit = 24, SearchLimit = 60000;
 
@@ -63,26 +63,39 @@ namespace HanaMart.Store
             (Mathf.Abs(box.x0 - 2.3f) < .001f && Mathf.Abs(box.z0 - 7.95f) < .001f) ||
             (Mathf.Abs(box.x0 - 1.6f) < .001f && Mathf.Abs(box.z0 + 4.68f) < .001f);
 
-        static Vector2Int Cell(Vector2 point) => new(Mathf.FloorToInt((point.x - X0) / CellSize),
-            Mathf.FloorToInt((point.y - Z0) / CellSize));
-        static Vector2 Center(Vector2Int point) => new(X0 + (point.x + .5f) * CellSize,
-            Z0 + (point.y + .5f) * CellSize);
+        static Vector2Int Cell(Vector2 point) => new((int)Math.Floor((point.x - X0) / CellMeters),
+            (int)Math.Floor((point.y - Z0) / CellMeters));
+        static Vector2 Center(Vector2Int point) => new((float)(X0 + (point.x + .5) * CellMeters),
+            (float)(Z0 + (point.y + .5) * CellMeters));
         static int Index(Vector2Int cell) => cell.y * Width + cell.x;
         bool Free(Vector2Int cell) => cell.x >= 0 && cell.x < Width && cell.y >= 0 && cell.y < Depth && grid[Index(cell)];
         public bool Walkable(float x, float z) => Free(Cell(new Vector2(x, z)));
 
         public bool LineFree(Vector2 start, Vector2 end)
         {
-            var previous = Cell(start);
-            if (!Free(previous) || !Free(Cell(end))) return false;
-            int steps = Mathf.Max(1, Mathf.CeilToInt(Vector2.Distance(start, end) / (CellSize * .5f)));
-            for (int sample = 1; sample <= steps; ++sample)
+            var current = Cell(start);
+            var goal = Cell(end);
+            if (!Free(current) || !Free(goal)) return false;
+
+            // Visit every crossed cell edge. Sampling by distance can skip the sliver of
+            // a blocked cell between two edges near the same corner.
+            int stepX = Math.Sign(goal.x - current.x), stepZ = Math.Sign(goal.y - current.y);
+            double dx = (double)end.x - start.x, dz = (double)end.y - start.y;
+            double deltaX = stepX == 0 ? double.PositiveInfinity : CellMeters / Math.Abs(dx);
+            double deltaZ = stepZ == 0 ? double.PositiveInfinity : CellMeters / Math.Abs(dz);
+            double crossingX = stepX == 0 ? double.PositiveInfinity : (X0 + (current.x + (stepX > 0 ? 1 : 0)) * CellMeters - start.x) / dx;
+            double crossingZ = stepZ == 0 ? double.PositiveInfinity : (Z0 + (current.y + (stepZ > 0 ? 1 : 0)) * CellMeters - start.y) / dz;
+            for (int edge = 0; edge < Width + Depth && current != goal; ++edge)
             {
-                var next = Cell(Vector2.Lerp(start, end, (float)sample / steps));
-                if (!Free(next) || !CanCrossCorner(previous, next)) return false;
-                previous = next;
+                var next = current;
+                if (crossingX <= crossingZ + 1e-8) next.x += stepX;
+                if (crossingZ <= crossingX + 1e-8) next.y += stepZ;
+                if (!Free(next) || !CanCrossCorner(current, next)) return false;
+                if (next.x != current.x) crossingX = next.x == goal.x ? double.PositiveInfinity : crossingX + deltaX;
+                if (next.y != current.y) crossingZ = next.y == goal.y ? double.PositiveInfinity : crossingZ + deltaZ;
+                current = next;
             }
-            return true;
+            return current == goal;
         }
 
         bool CanCrossCorner(Vector2Int start, Vector2Int end) => start.x == end.x || start.y == end.y ||
@@ -190,8 +203,8 @@ namespace HanaMart.Store
                     if (!Free(new Vector2Int(x, z))) continue;
                     int first = x;
                     while (x + 1 < Width && Free(new Vector2Int(x + 1, z))) ++x;
-                    float left = X0 + first * CellSize, right = X0 + (x + 1) * CellSize;
-                    float near = Z0 + z * CellSize, far = Z0 + (z + 1) * CellSize;
+                    float left = (float)(X0 + first * CellMeters), right = (float)(X0 + (x + 1) * CellMeters);
+                    float near = (float)(Z0 + z * CellMeters), far = (float)(Z0 + (z + 1) * CellMeters);
                     int corner = vertices.Count;
                     vertices.Add(ThreeCoords.ToUnity(left, 0, near));
                     vertices.Add(ThreeCoords.ToUnity(right, 0, near));

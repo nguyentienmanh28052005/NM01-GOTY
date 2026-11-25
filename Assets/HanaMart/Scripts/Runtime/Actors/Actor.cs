@@ -58,6 +58,7 @@ namespace HanaMart.Actors
             }
             catch
             {
+                actor.DisposeResources();
                 Release(root);
                 throw;
             }
@@ -244,13 +245,16 @@ namespace HanaMart.Actors
                 {
                     Vector2 direction = path[i] - new Vector2(pos.x, pos.z);
                     float distance = direction.magnitude;
-                    if (distance < .06f)
+                    if (distance < .0001f)
                     {
                         waypoint++;
                         continue;
                     }
                     float distanceThisFrame = Mathf.Min(distance, speed * dt);
-                    pos += new Vector3(direction.x, 0, direction.y) * (distanceThisFrame / distance);
+                    if (distanceThisFrame >= distance)
+                        pos = new Vector3(path[i].x, pos.y, path[i].y);
+                    else
+                        pos += new Vector3(direction.x, 0, direction.y) * (distanceThisFrame / distance);
                     float target = Mathf.Atan2(direction.x, direction.y);
                     yaw += Mathf.DeltaAngle(yaw * Mathf.Rad2Deg, target * Mathf.Rad2Deg) * Mathf.Deg2Rad * Mathf.Min(1, dt * 7);
                     moving = distanceThisFrame > 0;
@@ -358,13 +362,17 @@ namespace HanaMart.Actors
         {
             if (!alive) return;
             alive = false;
+            if (!Application.isPlaying) DisposeResources();
             Release(gameObject);
         }
 
-        void OnDestroy()
+        void OnDestroy() => DisposeResources();
+
+        void DisposeResources()
         {
             if (graph.IsValid()) graph.Destroy();
             foreach (var resource in resources) Release(resource);
+            resources.Clear();
         }
 
         static void Release(UnityEngine.Object value)

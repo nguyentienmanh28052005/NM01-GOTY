@@ -152,7 +152,7 @@ namespace HanaMart.EditorTools
             CaptureFrame(camera, "docs/visual/unity/actors-reveal.png");
         }
 
-        static void CaptureFrame(Camera camera, string output)
+        internal static void CaptureFrame(Camera camera, string output)
         {
             var previousTarget = camera.targetTexture;
             var previousActive = RenderTexture.active;

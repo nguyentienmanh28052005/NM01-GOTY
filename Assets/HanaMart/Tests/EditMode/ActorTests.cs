@@ -12,7 +12,7 @@ namespace HanaMart.Tests
     {
         Actor actor;
         static ActorCatalog Catalog()=>AssetDatabase.LoadAssetAtPath<ActorCatalog>("Assets/HanaMart/Data/ActorCatalog.asset");
-        [TearDown]public void Cleanup(){if(actor)Object.DestroyImmediate(actor.gameObject);}
+        [TearDown]public void Cleanup(){if(actor)actor.Remove();}
         [Test]public void IdleLowersImportedTposeArms()
         {
             actor=Actor.Spawn(Catalog(),new ActorOptions{modelIndex=1},Vector3.zero);

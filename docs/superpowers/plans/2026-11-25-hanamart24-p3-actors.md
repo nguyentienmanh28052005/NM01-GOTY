@@ -38,8 +38,8 @@ Nguồn: `source/src/person.js`, `game.js` (Actor), `nav.js` trong bản Three.j
 - [x] Port walkableAt grid C=.15/R=.24/AREAS cho logic đặt đồ, nối Placement thay WalkArea người chơi. Tìm kiếm giới hạn 60000 lượt, nearestFree 24 vòng ô theo nav.js.
 - [x] Test placement cũ và cả assembly GREEN 124/124 (`a44961fc891b4b6198260524a9b9ba2e`). Commit + HANDOFF.
 
-## Task 5 — Kiểm tích hợp nhân vật
+## Task 5 — Kiểm tích hợp nhân vật (xong)
 
-- [ ] QA qua MCP: showroom tạm trong Play (không đổi bố cục scene đã lưu) cho bốn model, các vai và ba mức reveal; chụp bằng chứng.
-- [ ] Kiểm đường đi thực tế không xuyên kệ/quầy/kính, tốc độ và animation đồng bộ; 60 giây cập nhật không drift/leak/Console exception. Giới hạn QA theo thời gian và số vòng.
-- [ ] Kiểm hai scene bị bảo vệ không có git diff; toàn HanaMart.Tests.EditMode GREEN; cập nhật HANDOFF, ledger và commit. Viết Kế hoạch 4 khi bắt đầu, không báo hoàn thành game ở mốc này.
+- [x] QA qua MCP: showroom Play cho bốn model, trẻ em, áo mưa và ba mức reveal; ảnh ở `docs/visual/characters/`.
+- [x] Test đường đi theo mỗi bước của bốn model, sửa cắt góc và giải phóng mesh tạm. Unity Play chạy thực 60.001 s, 5704 khung, 19.45 m đến hẻm, log rỗng.
+- [x] Hai scene bị bảo vệ không có git diff; toàn HanaMart.Tests.EditMode GREEN 128/128 (`beca836aab4f4578aca1ea83dc01a30b`); cập nhật HANDOFF, ledger và commit. Kế hoạch 4 đã viết.
