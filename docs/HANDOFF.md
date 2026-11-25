@@ -3,6 +3,14 @@
 > **Đọc file này đầu tiên.** Người bàn giao: Claude (2026-11-25 02:15). Người nhận: Codex (hoặc phiên Claude mới).
 > Người dùng: Nguyễn Tiến Mạnh — nói tiếng Việt, hãy trả lời bằng tiếng Việt.
 
+## Tiếp nhận từ Codex — 25/11/2026
+
+- **Kế hoạch 5, Task 3 đã hoàn thành và commit cục bộ.** Tiếp tục từ **Kế hoạch 5, Task 4** (nhịp phim giữa ca, nhịp tim, bóng rìa mắt, quãng im lặng).
+- **Mốc xác nhận gần nhất:** 220/220 `HanaMart.Tests.EditMode` đạt (`e49104ecea974fe686eaf89ccf1525d9`, `p5-t3-full`). MCP Play QA: `Capture Object Death Cuts` đạt 11/11 cảnh (`death-objects.json`: `12, 16, 6, 7, 8, 21, 5, 10, 14, 17, 0`), `Capture Guest Death Cuts` đạt 4/4 (`death-guests.json`), `Run Death Camera` đạt (`death-camera.json`), `Run Story Milestones` đạt cả 2 kết thúc A/B (`story-smoke.json`), `Logs/HanaMart/play-errors.log` và Unity Console (sau khi thoát Play) đều 0 lỗi/cảnh báo. Ảnh tại `docs/visual/deaths/object-scenes.jpg`. Unity hiện ở **Edit Mode**, scene `Assets/HanaMart/Scenes/HanaMart24.unity`.
+- **Các sửa lỗi nền tảng đã hoàn thiện trong Task 3:** `BindEnvironment` dùng `GetComponentInChildren<Light>(true)` (sửa lỗi `lamps` rỗng), `HanaMart/Fix Dynamic Static Flags` gỡ `BatchingStatic` khỏi cửa/nắp tủ đông/14 tấm đèn trần trong `HanaMart24.unity`, `HemisphereAmbient` hỗ trợ `tint` và được điều khiển cùng 14 máng đèn trần qua `Power`/`TintStore`/`DeathDark`, `DeathBurst` dùng texture hạt sáng tròn, `DeathStaging.FindSpot` thêm fallback hành lang sau quầy, `Actor` thêm `pitch`/`roll` và guard `OnDestroy`/`Remove` khi thoát Play.
+- Kế hoạch 1–4 đã xong. Kế hoạch 5 còn Task 4. Kế hoạch 6–7 đã viết kế hoạch, chưa triển khai. HUD vẫn tạm. AudioBank và logic ca đã gắn scene; QA đã kiểm từng mốc và cả hai kết thúc, nhưng **chưa chơi một ca tương tác liên tục 00:00→06:00, chưa làm đối chiếu hình cuối và chưa đủ điều kiện bàn giao game**. Báo cáo nghiệm thu cuối phải ở `docs/visual/compare/report.md`.
+- Các thay đổi ngoài phần port cần giữ nguyên gồm `NM01-GOTY.slnx`, `ProjectSettings/QualitySettings.asset`, `docs/visual/store_back.png`. Hai scene được bảo vệ không có diff. Không đưa `Assets/_Recovery`, `Claude outputs` hoặc các file ngoài task vào commit.
+
 ## 1. Mục tiêu (yêu cầu gốc của người dùng)
 Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ bản Three.js v2.2 sang Unity:
 - Bản gốc: `E:\Downloads\top\top\HanaMart24` — đọc `GAME_DOC.md` (thiết kế đầy đủ: 13 điều nội quy, phụ lục, điều 14, 3 phase, đạo diễn khách, mốc giờ, dị thường, 9 bẫy, Giờ Đỏ, 15 màn chết, 2 kết thúc…), mã nguồn `source/src/*.js`, bản chơi `HanaMart24.html`.
@@ -93,7 +101,7 @@ Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ b
 - RED 23/24 (`2ba6400e326343a38f96cfcca61d8ada`) và RED recap khi sequence kết thúc sớm (`bdaf3067cd5c4abf80d883d1d37649c9`) → **215/215 EditMode GREEN** (`5420511b90e341debcd767c7ad28f80a`). MCP `Run Death Camera` đo xoay tới 112°, skip mở recap, retry dọn Actor và phục hồi Film/input; log Play rỗng. `Run Story Milestones` đã chờ recap mới retry.
 - **Task 2 XONG**: `ShiftGame.DeathGuests` nối bốn sequence với khách/người giả. `counter` quay đầu theo mã 15 hoặc variant chẵn, còn lại kéo cổ; `childMom` gõ/nứt kính, trẻ và bóng tối; `storage` đi lùi qua kho, tắt từng đèn, áp sát; `mirae` đồng hồ loạn và sáu bóng qua kính. Đạo cụ sinh trong Play được cleanup khi retry.
 - RED variant (`2b6b8f9ba10d48d2a4e6fcf8eaee39d9`) → **216/216 EditMode GREEN** (`a064f6261da1420c97d602b3d45dcbfa`). MCP `Capture Guest Death Cuts`: cả bốn cảnh chạy hết không skip (4.30/6.27/11.69/7.66 s), kiểm staging riêng, retry, log Play rỗng. Ảnh `docs/visual/deaths/guest-scenes.jpg`; letterbox HUD và so độ sáng/ánh sáng vật liệu vẫn còn ở các kế hoạch sau.
-- **Tiếp theo Task 3**: phone/freezer/CCTV/box13/alley/blackout/red/chase/fired. Chưa chạy ca tương tác liên tục hoặc nghiệm thu hình ảnh cuối.
+- **Task 3 XONG**: `ShiftGame.DeathObjects`, `DeathStaging`, `StoreImporter` (gỡ `BatchingStatic` cho lá cửa/nắp tủ đông/14 máng đèn trần), `HemisphereAmbient` (nối `tint` và dimming cùng máng đèn), `Actor` (`pitch`/`roll` + guard `OnDestroy`/`Remove`), `DeathCutTests` 30/30 → toàn assembly **220/220 EditMode GREEN** (`e49104ecea974fe686eaf89ccf1525d9`). MCP `Capture Object Death Cuts` đạt 11/11 cảnh (`12, 16, 6, 7, 8, 21, 5, 10, 14, 17, 0`) + retry phục hồi; `Capture Guest Death Cuts`, `Run Death Camera`, `Run Story Milestones` đều đạt, log & Console rỗng. Ảnh `docs/visual/deaths/object-scenes.jpg`.
 
 ## 6. Việc còn lại sau đó (kế hoạch 3–7, viết chi tiết khi bắt đầu)
 3. Nhân vật `Actor` (mặt nạ quần áo + nhuộm, áo mưa vỏ phồng, trẻ em 0.68, biến hình xương + material reveal, NavMesh, clip `Female Walk` retarget, đứng/thở thủ tục).

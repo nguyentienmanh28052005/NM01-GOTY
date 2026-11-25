@@ -7,7 +7,7 @@ namespace HanaMart.Store
     [ExecuteAlways]
     public class HemisphereAmbient : MonoBehaviour
     {
-        public Color sky = Color.white, ground = Color.black;
+        public Color sky = Color.white, ground = Color.black, tint = Color.white;
         public float intensity = 1f;
         [Range(0, 2)] public float scale = 1f; // để làm tối khi mất điện
         // Ánh sáng môi trường của "phòng trắng có dải đèn" (store._env của bản Three.js) — gần đúng bằng 3 màu
@@ -20,9 +20,9 @@ namespace HanaMart.Store
             RenderSettings.ambientMode = AmbientMode.Trilight;
             float k = intensity * scale;
             float e = envScale * scale;
-            RenderSettings.ambientSkyColor = sky * k + envSky * e;
-            RenderSettings.ambientEquatorColor = Color.Lerp(sky, ground, 0.5f) * k + envEquator * e;
-            RenderSettings.ambientGroundColor = ground * k + envGround * e;
+            RenderSettings.ambientSkyColor = (sky * k + envSky * e) * tint;
+            RenderSettings.ambientEquatorColor = (Color.Lerp(sky, ground, 0.5f) * k + envEquator * e) * tint;
+            RenderSettings.ambientGroundColor = (ground * k + envGround * e) * tint;
         }
     }
 }

@@ -17,7 +17,8 @@ namespace HanaMart.Shift
             public Light Lamp;
             public float Brightness, FlickerUntil;
             public Color Color;
-            public bool Inside, Off;
+            public bool Inside, Alley, Off;
+            public readonly List<(Renderer renderer, Color baseColor, Color emissionColor)> Panels = new();
         }
 
         [Serializable]
@@ -39,21 +40,47 @@ namespace HanaMart.Shift
         float ghostDoorFraction = .35f;
         float baseAmbient, baseReflection;
         bool insidePower = true, outsidePower = true;
+        HemisphereAmbient hemisphere;
+        float litAmbient = 1, ambientLevel = 1;
+        Color litTint = Color.white, ambientTint = Color.white;
 
         void BindEnvironment(StoreMarker[] sceneObjects)
         {
             tintBlock = new MaterialPropertyBlock();
             baseAmbient = RenderSettings.ambientIntensity;
             baseReflection = RenderSettings.reflectionIntensity;
+            hemisphere = FindFirstObjectByType<HemisphereAmbient>();
             foreach (var marker in sceneObjects)
             {
-                if (marker.kind != StoreMarker.Kind.Light || !marker.TryGetComponent<Light>(out var lamp)) continue;
+                if (marker.kind != StoreMarker.Kind.Light) continue;
+                var lamp = marker.GetComponentInChildren<Light>(true);
+                if (!lamp) continue;
                 var p = ThreeCoords.ToUnity(lamp.transform.position);
+                bool alley = marker.key.Contains("alley", StringComparison.OrdinalIgnoreCase);
+                bool spillLight = marker.key.Contains("spill", StringComparison.OrdinalIgnoreCase);
                 lamps.Add(new ShopLight
                 {
                     Lamp = lamp, Brightness = lamp.intensity, Color = lamp.color,
-                    Inside = p.x >= 0 && p.x <= 12 && p.z < 8 && p.z >= -4.6f,
+                    Inside = spillLight || (p.x >= 0 && p.x <= 12 && p.z < 8 && p.z >= -4.6f),
+                    Alley = alley,
                 });
+            }
+            var ceilings = lamps.Where(light => light.Inside && light.Lamp.transform.position.y > 2.5f).ToArray();
+            var sceneRenderers = doors ? doors.GetComponentsInChildren<Renderer>(true)
+                : FindObjectsByType<Renderer>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (var renderer in sceneRenderers)
+            {
+                if (renderer.transform.position.y <= 2.94f || renderer.transform.position.y >= 2.97f) continue;
+                var mat = renderer.sharedMaterial;
+                if (!mat || !mat.HasProperty("_EmissionColor") || mat.GetColor("_EmissionColor").maxColorComponent <= .1f) continue;
+                var owner = ceilings.OrderBy(light => Vector2.Distance(
+                    new Vector2(light.Lamp.transform.position.x, light.Lamp.transform.position.z),
+                    new Vector2(renderer.transform.position.x, renderer.transform.position.z))).FirstOrDefault();
+                if (owner != null)
+                {
+                    Color baseColor = mat.HasProperty("_BaseColor") ? mat.GetColor("_BaseColor") : Color.white;
+                    owner.Panels.Add((renderer, baseColor, mat.GetColor("_EmissionColor")));
+                }
             }
             var screen = Marker("R:monScreen");
             monitor = screen ? screen.GetComponent<Renderer>() : null;
@@ -74,15 +101,29 @@ namespace HanaMart.Shift
             if (cctvDouble) cctvDouble.Remove();
             if (cctvGhost) cctvGhost.Remove();
             cctvDouble = cctvGhost = null;
-            Power(true, true);
-            TintStore(0xffffff, 1);
+            litAmbient = 1;
+            litTint = Color.white;
             foreach (var light in lamps)
             {
                 if (!light.Lamp) continue;
                 light.FlickerUntil = 0;
                 light.Off = false;
                 light.Lamp.color = light.Color;
-                light.Lamp.intensity = light.Brightness;
+            }
+            Power(true, true);
+            TintStore(0xffffff, 1);
+            if (monitor)
+            {
+                tintBlock ??= new MaterialPropertyBlock();
+                tintBlock.Clear();
+                tintBlock.SetColor("_BaseColor", Color.white);
+                tintBlock.SetColor("_EmissionColor", Color.white);
+                if (securityImage)
+                {
+                    tintBlock.SetTexture("_BaseMap", securityImage);
+                    tintBlock.SetTexture("_EmissionMap", securityImage);
+                }
+                monitor.SetPropertyBlock(tintBlock);
             }
         }
 
@@ -102,7 +143,7 @@ namespace HanaMart.Shift
                 if (!light.Lamp) continue;
                 float variance = light.FlickerUntil > Time.time && Mathf.Sin(Time.time * 47 + light.Lamp.GetInstanceID()) < .35f ? .19f : 1;
                 bool powered = light.Inside ? insidePower : outsidePower;
-                light.Lamp.intensity = light.Off || !powered ? 0 : light.Brightness * variance;
+                ApplyLamp(light, light.Off || !powered ? 0 : variance);
             }
             if (HasFlag("cctvGhost"))
             {
@@ -379,17 +420,64 @@ namespace HanaMart.Shift
         {
             insidePower = inside;
             outsidePower = outside;
+            ApplyAmbient(inside ? litAmbient : .06f, inside ? litTint : Color.white);
             foreach (var light in lamps)
-                if (light.Lamp) light.Lamp.intensity = light.Off || !(light.Inside ? inside : outside) ? 0 : light.Brightness;
+                if (light.Lamp) ApplyLamp(light, light.Off || !(light.Inside ? inside : outside) ? 0 : 1);
         }
 
         void TintStore(int rgb, float environment)
         {
-            Color tint = Hex(rgb);
+            litTint = Hex(rgb);
+            litAmbient = environment;
             foreach (var light in lamps)
-                if (light.Lamp && light.Inside) light.Lamp.color = light.Color * tint;
-            RenderSettings.ambientIntensity = baseAmbient * environment;
-            RenderSettings.reflectionIntensity = baseReflection * environment;
+            {
+                if (!light.Lamp || !light.Inside) continue;
+                light.Lamp.color = light.Color * litTint;
+                ApplyLamp(light, light.Off || !insidePower ? 0 : 1);
+            }
+            ApplyAmbient(insidePower ? litAmbient : .04f, insidePower ? litTint : Color.white);
+        }
+
+        void ApplyAmbient(float level, Color tint)
+        {
+            ambientLevel = level;
+            ambientTint = tint;
+            if (hemisphere)
+            {
+                hemisphere.scale = level;
+                hemisphere.tint = tint;
+                hemisphere.Apply();
+            }
+            else RenderSettings.ambientIntensity = baseAmbient * level;
+            RenderSettings.reflectionIntensity = baseReflection * level;
+        }
+
+        void ApplyLamp(ShopLight state, float multiplier)
+        {
+            if (state.Lamp) state.Lamp.intensity = state.Brightness * multiplier;
+            if (state.Panels.Count == 0) return;
+            tintBlock ??= new MaterialPropertyBlock();
+            foreach (var panel in state.Panels)
+            {
+                if (!panel.renderer) continue;
+                if (multiplier >= .999f && litTint == Color.white)
+                {
+                    panel.renderer.SetPropertyBlock(null);
+                    continue;
+                }
+                tintBlock.Clear();
+                if (multiplier <= .001f)
+                {
+                    tintBlock.SetColor("_BaseColor", new Color(.12f, .14f, .16f));
+                    tintBlock.SetColor("_EmissionColor", Color.black);
+                }
+                else
+                {
+                    tintBlock.SetColor("_BaseColor", panel.baseColor * litTint);
+                    tintBlock.SetColor("_EmissionColor", panel.emissionColor * litTint * multiplier);
+                }
+                panel.renderer.SetPropertyBlock(tintBlock);
+            }
         }
 
         static Color Hex(int rgb) => new Color32((byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb, 255);

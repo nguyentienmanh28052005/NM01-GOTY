@@ -11,7 +11,7 @@ namespace HanaMart.Actors
     public sealed class Actor : MonoBehaviour
     {
         public Vector3 pos;
-        public float yaw, speed = 1.15f;
+        public float yaw, pitch, roll, speed = 1.15f;
         public bool alive = true, moving;
         public bool AutoTick { get; set; } = true;
         public bool OnRoute => path != null && waypoint < path.Count;
@@ -273,7 +273,8 @@ namespace HanaMart.Actors
         public void StepPose(float dt, float movementSpeed)
         {
             if (!alive || !Model) return;
-            transform.SetPositionAndRotation(ThreeCoords.ToUnity(pos), Quaternion.Euler(0, -yaw * Mathf.Rad2Deg, 0));
+            transform.SetPositionAndRotation(ThreeCoords.ToUnity(pos),
+                Quaternion.Euler(0, -yaw * Mathf.Rad2Deg, 0) * Quaternion.Euler(pitch * Mathf.Rad2Deg, 0, roll * Mathf.Rad2Deg));
             if (lookTarget.HasValue) Motion.LookAt(lookTarget.Value, pos, yaw, dt, Options);
             else if (dt > 0)
             {
@@ -292,7 +293,7 @@ namespace HanaMart.Actors
             }
             Model.transform.SetLocalPositionAndRotation(modelPosition, modelRotation);
             ApplyBoneEffects();
-            if (shoes) Model.transform.position += Vector3.up * (Motion.blend > .001f ? FloorCorrection() : idleHeightCorrection);
+            if (shoes) Model.transform.position += (Motion.blend > .001f ? Vector3.up * FloorCorrection() : transform.up * idleHeightCorrection);
             ApplyAppearance();
         }
 
@@ -361,13 +362,17 @@ namespace HanaMart.Actors
 
         public void Remove()
         {
-            if (!alive) return;
+            if (!alive || !this) { alive = false; return; }
             alive = false;
             if (!Application.isPlaying) DisposeResources();
             Release(gameObject);
         }
 
-        void OnDestroy() => DisposeResources();
+        void OnDestroy()
+        {
+            alive = false;
+            DisposeResources();
+        }
 
         void DisposeResources()
         {

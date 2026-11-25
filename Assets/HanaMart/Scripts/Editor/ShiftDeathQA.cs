@@ -3,9 +3,11 @@ using System.Collections;
 using System.IO;
 using System.Linq;
 using HanaMart.Actors;
+using HanaMart.Interaction;
 using HanaMart.Player;
 using HanaMart.Render;
 using HanaMart.Shift;
+using HanaMart.Store;
 using UnityEditor;
 using UnityEngine;
 
@@ -29,6 +31,157 @@ namespace HanaMart.EditorTools
             Application.runInBackground = true;
             var camera = Camera.main;
             camera.GetComponent<PlayerController>().StartCoroutine(CheckGuestCuts(camera));
+        }
+
+        [MenuItem("HanaMart/QA/Capture Object Death Cuts")]
+        public static void ObjectCuts()
+        {
+            if (!Application.isPlaying) throw new InvalidOperationException("Object death QA runs in Play mode.");
+            Application.runInBackground = true;
+            var camera = Camera.main;
+            camera.GetComponent<PlayerController>().StartCoroutine(CheckObjectCuts(camera));
+        }
+
+        static IEnumerator CheckObjectCuts(Camera view)
+        {
+            var game = view.GetComponent<ShiftGame>();
+            var player = view.GetComponent<PlayerController>();
+            var doors = UnityEngine.Object.FindFirstObjectByType<StoreDoors>();
+            var allMarkers = UnityEngine.Object.FindObjectsByType<StoreMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var lightMarkers = allMarkers.Where(marker => marker.kind == StoreMarker.Kind.Light)
+                .Select(marker => (marker, lamp: marker.GetComponentInChildren<Light>(true)))
+                .Where(entry => entry.lamp != null).ToArray();
+            var insideCeilings = lightMarkers.Where(entry =>
+                !entry.marker.key.Contains("alley", StringComparison.OrdinalIgnoreCase) &&
+                entry.lamp.transform.position.y > 2.5f &&
+                ThreeCoords.ToUnity(entry.lamp.transform.position) is Vector3 pos &&
+                pos.x >= 0 && pos.x <= 12 && pos.z < 8 && pos.z >= -4.6f).Select(entry => entry.lamp).ToArray();
+            var storageLight = insideCeilings.First(lamp => lamp.transform.position.z < 0);
+            var alleyLights = lightMarkers.Where(entry => entry.marker.key.Contains("alley", StringComparison.OrdinalIgnoreCase))
+                .Select(entry => entry.lamp).ToArray();
+            var initialColors = insideCeilings.Select(lamp => lamp.color).ToArray();
+            var monitor = allMarkers.FirstOrDefault(marker => marker.key == "R:monScreen")?.GetComponent<Renderer>();
+            var freezerLid = doors ? doors.Freezer : null;
+            var hemisphere = UnityEngine.Object.FindFirstObjectByType<HemisphereAmbient>();
+
+            var cuts = new[]
+            {
+                (rule: 12, at: 5.25f, pos: default(Vector2?), facing: default(Vector2?)),
+                (rule: 16, at: 5.4f, pos: null, facing: null),
+                (rule: 6, at: 2.30f, pos: new Vector2(3, -2.8f), facing: new Vector2(0, -1)),
+                (rule: 7, at: 5.6f, pos: null, facing: null),
+                (rule: 8, at: 2.6f, pos: new Vector2(2.8f, -6.25f), facing: new Vector2(0, 1)),
+                (rule: 21, at: 2.6f, pos: null, facing: null),
+                (rule: 5, at: 2.85f, pos: new Vector2(2.15f, -6.2f), facing: new Vector2(0, -1)),
+                (rule: 10, at: 4.85f, pos: null, facing: null),
+                (rule: 14, at: 2.55f, pos: null, facing: null),
+                (rule: 17, at: 1.6f, pos: null, facing: null),
+                (rule: 0, at: 1.55f, pos: null, facing: null),
+            };
+
+            var results = new CutResult[cuts.Length];
+            Directory.CreateDirectory("docs/visual/unity");
+            Directory.CreateDirectory("Logs/HanaMart");
+            const string output = "Logs/HanaMart/death-objects.json";
+            File.Delete(output);
+
+            for (int index = 0; index < cuts.Length; ++index)
+            {
+                var (rule, at, pos, facing) = cuts[index];
+                game.NewShift();
+                if (pos.HasValue && facing.HasValue)
+                {
+                    player.Motor.pos = pos.Value;
+                    player.Motor.SetYawFacing(facing.Value.x, facing.Value.y);
+                    player.Motor.pitch = player.Motor.crouch = 0;
+                    player.Motor.Update(0, default, player.settings, player.Area);
+                    player.ApplyPose();
+                }
+                yield return null;
+                yield return null;
+                int productsBefore = allMarkers.Count(marker => marker.kind == StoreMarker.Kind.Product && marker.gameObject.activeInHierarchy);
+                game.Die(rule, "Kiểm tra cảnh thua thiết bị và địa điểm.");
+                var cut = game.ActiveDeath;
+                double end = Time.realtimeSinceStartupAsDouble + 25;
+                for (int frame = 0; frame < 5000 && cut.Time < at && Time.realtimeSinceStartupAsDouble < end; ++frame) yield return null;
+                if (cut.Done || cut.Time < at) throw new InvalidOperationException($"Rule {rule} did not reach its capture cue.");
+
+                var actors = UnityEngine.Object.FindObjectsByType<Actor>(FindObjectsSortMode.None)
+                    .Where(actor => actor.name.StartsWith("Cảnh thua", StringComparison.Ordinal)).ToArray();
+                bool staged = rule switch
+                {
+                    12 => game.PosDisplay == "04:44\n04:44\n04:44" && actors.Length == 1,
+                    16 => game.PosDisplay == "\nSAU LƯNG\n" && actors.Length == 1,
+                    6 => insideCeilings.Length > 0 && insideCeilings.All(lamp => lamp.color.b > lamp.color.r * 1.15f) &&
+                         UnityEngine.Object.FindObjectsByType<Transform>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)
+                             .Count(t => t.name == "Tay trong tủ đông") == 6 &&
+                         freezerLid != null && Quaternion.Angle(freezerLid.closed, freezerLid.transform.localRotation) > 60f,
+                    7 => actors.Length == 1,
+                    8 => GameObject.Find("Thùng thứ 13") is GameObject alleyBox &&
+                         Vector3.Distance(alleyBox.transform.position, ThreeCoords.ToUnity(new Vector3(3, 0, -5.55f))) < .05f &&
+                         actors.Length == 1 && storageLight.intensity == 0,
+                    21 => GameObject.Find("Thùng thứ 13") is GameObject storeBox &&
+                          Vector3.Distance(storeBox.transform.position, ThreeCoords.ToUnity(new Vector3(3, 0, -5.55f))) > 1f &&
+                          actors.Length == 1 && storageLight.intensity == 0,
+                    5 => actors.Length == 1 && actors[0].pos.z > -9f && actors[0].pos.z < -4.7f &&
+                         alleyLights.Length > 0 && alleyLights.All(lamp => lamp.intensity > 0),
+                    10 => insideCeilings.Length > 0 && insideCeilings.All(lamp => lamp.intensity == 0) &&
+                          (!hemisphere || hemisphere.scale < .1f) &&
+                          actors.Length == 1 && GameObject.Find("Tia lửa cầu dao") != null,
+                    14 => actors.Length == 7 && insideCeilings.Length > 0 && insideCeilings.All(lamp => lamp.color.r > lamp.color.g * 2f),
+                    17 => actors.Length == 1 && Mathf.Abs(actors[0].roll - Mathf.PI) < .01f && GameObject.Find("Tia lửa đèn trần") != null,
+                    0 => allMarkers.Count(marker => marker.kind == StoreMarker.Kind.Product && marker.gameObject.activeInHierarchy) < productsBefore &&
+                         UnityEngine.Object.FindObjectsByType<ItemPhysicsBody>(FindObjectsInactive.Exclude, FindObjectsSortMode.None).Length > 0,
+                    _ => false,
+                };
+                if (!staged) throw new InvalidOperationException($"Rule {rule} did not satisfy its source staging assertions.");
+
+                CharacterPreview.CaptureFrame(view, $"docs/visual/unity/death-{rule}.png");
+                for (int frame = 0; frame < 6500 && !cut.Done && Time.realtimeSinceStartupAsDouble < end; ++frame) yield return null;
+                if (!cut.Done || cut.Skipped || cut.Time >= 19.9f || game.Dialogue == null)
+                    throw new InvalidOperationException($"Rule {rule} did not finish its full sequence cleanly.");
+                results[index] = new CutResult { rule = rule, kind = cut.Kind, seconds = cut.Time };
+
+                game.SelectOption(0);
+                yield return null;
+                yield return null;
+
+                if (game.Dead || !player.GameplayEnabled || actors.Any(actor => actor))
+                    throw new InvalidOperationException($"Rule {rule} left death state or actor after retry.");
+                if (!insideCeilings.All(lamp => lamp.intensity > 0) || !alleyLights.All(lamp => lamp.intensity > 0))
+                    throw new InvalidOperationException($"Rule {rule} did not restore store/alley lights after retry.");
+                for (int l = 0; l < insideCeilings.Length; ++l)
+                    if (Vector4.Distance(insideCeilings[l].color, initialColors[l]) > .01f)
+                        throw new InvalidOperationException($"Rule {rule} did not restore lamp color after retry.");
+                if (hemisphere && (Mathf.Abs(hemisphere.scale - 1) > .01f || Vector4.Distance(hemisphere.tint, Color.white) > .01f))
+                    throw new InvalidOperationException($"Rule {rule} did not restore HemisphereAmbient after retry.");
+                if ((rule == 12 || rule == 16) && !string.IsNullOrEmpty(game.PosDisplay))
+                    throw new InvalidOperationException($"Rule {rule} did not restore POS display after retry.");
+                if (rule == 6 && (GameObject.Find("Tay trong tủ đông") != null || GameObject.Find("Lòng tủ đông") != null ||
+                    (freezerLid != null && Quaternion.Angle(freezerLid.closed, freezerLid.transform.localRotation) > 1f)))
+                    throw new InvalidOperationException("Rule 6 did not restore freezer arms or lid after retry.");
+                if (rule == 7 && monitor != null)
+                {
+                    var block = new MaterialPropertyBlock();
+                    monitor.GetPropertyBlock(block);
+                    if (block.GetColor("_BaseColor").r < .99f)
+                        throw new InvalidOperationException("Rule 7 did not restore CCTV monitor color after retry.");
+                }
+                if ((rule == 8 || rule == 21) && GameObject.Find("Thùng thứ 13") != null)
+                    throw new InvalidOperationException($"Rule {rule} did not remove box 13 after retry.");
+                if (rule == 10 && GameObject.Find("Tia lửa cầu dao") != null)
+                    throw new InvalidOperationException("Rule 10 did not remove spark light after retry.");
+                if (rule == 17 && GameObject.Find("Tia lửa đèn trần") != null)
+                    throw new InvalidOperationException("Rule 17 did not remove ceiling spark light after retry.");
+                if (rule == 0)
+                {
+                    int productsAfter = allMarkers.Count(marker => marker.kind == StoreMarker.Kind.Product && marker.gameObject.activeInHierarchy);
+                    int bodiesAfter = UnityEngine.Object.FindObjectsByType<ItemPhysicsBody>(FindObjectsInactive.Exclude, FindObjectsSortMode.None).Length;
+                    if (productsAfter != productsBefore || bodiesAfter != 0)
+                        throw new InvalidOperationException($"Rule 0 did not restore shelf products ({productsAfter}/{productsBefore}) or clear physics clones ({bodiesAfter}).");
+                }
+            }
+            File.WriteAllText(output, JsonUtility.ToJson(new CutResults { passed = true, scenes = results }, true));
         }
 
         static IEnumerator CheckGuestCuts(Camera view)

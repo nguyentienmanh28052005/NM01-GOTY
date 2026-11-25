@@ -333,7 +333,7 @@ namespace HanaMart.Shift
         void StartChase()
         {
             var playerPosition = transform.position;
-            var lights = lamps.Where(light => light.Inside && light.Lamp.transform.position.z >= 0)
+            var lights = lamps.Where(light => light.Inside && light.Lamp.transform.position.z >= 0 && light.Lamp.transform.position.y > 2.5f)
                 .OrderByDescending(light => Vector2.Distance(new Vector2(playerPosition.x, playerPosition.z),
                     new Vector2(light.Lamp.transform.position.x, light.Lamp.transform.position.z))).ToArray();
             if (lights.Length == 0) return;

@@ -87,5 +87,47 @@ namespace HanaMart.Tests
             Assert.That(Vector3.Dot(camera.Rotation * Vector3.forward, (camera.LookAt - camera.Position).normalized), Is.GreaterThan(.999f));
             Assert.Greater(Vector3.Angle(camera.Rotation * Vector3.up, Vector3.up), 12);
         }
+
+        [Test]
+        public void BoxThirteenUsesItsAlleyPositionOnlyForTheAlleyDelivery()
+        {
+            var eye = new Vector3(2.8f, 1.62f, -6.25f);
+            Assert.AreEqual(new Vector3(3, 0, -5.55f), DeathStaging.BoxOrigin(8, eye, Vector3.right));
+            Assert.AreEqual(new Vector3(4, 0, -6.25f), DeathStaging.BoxOrigin(21, eye, Vector3.right));
+        }
+
+        [Test]
+        public void ApparitionRangeStopsBeforeTheAlleyWalls()
+        {
+            var eye = new Vector3(2, 1.62f, -6);
+            Assert.That(DeathStaging.AlleySpace(eye, Vector3.back), Is.InRange(2.7f, 2.95f));
+            Assert.That(DeathStaging.AlleySpace(eye, Vector3.left), Is.InRange(3.1f, 3.25f));
+            Assert.That(DeathStaging.AlleySpace(eye, Vector3.right), Is.LessThan(6.5f));
+        }
+
+        [Test]
+        public void FiredSequenceSelectsNearbyProductsInTheForwardCone()
+        {
+            var eye = new Vector3(1, 1.6f, 4);
+            Assert.IsTrue(DeathStaging.FiredProductInView(new Vector3(6, 1, 4), eye, Vector3.right));
+            Assert.IsFalse(DeathStaging.FiredProductInView(new Vector3(6, 1, 4), eye, Vector3.left));
+            Assert.IsFalse(DeathStaging.FiredProductInView(new Vector3(9, 1, 4), eye, Vector3.right));
+            Assert.IsFalse(DeathStaging.FiredProductInView(new Vector3(5, 1, .6f), eye, Vector3.right));
+        }
+
+        [Test]
+        public void DeathSpotFindsCorridorSpaceBehindTheCounterInsteadOfStandingOnThePlayer()
+        {
+            static bool CounterCorridor(float x, float z) => x >= .695f && x <= 1.01f && z >= 2.4f && z <= 6.2f;
+            var eye = new Vector3(.85f, 1.62f, 4.4f);
+
+            var cctvSpot = DeathStaging.FindSpot(eye, new Vector3(-.35f, 0, -.94f), .6f, Mathf.PI, CounterCorridor);
+            Assert.IsTrue(CounterCorridor(cctvSpot.x, cctvSpot.z));
+            Assert.GreaterOrEqual(Vector2.Distance(new Vector2(cctvSpot.x, cctvSpot.z), new Vector2(eye.x, eye.z)), .55f);
+
+            var boxSpot = DeathStaging.FindSpot(eye, Vector3.right, 1.2f, 0, CounterCorridor);
+            Assert.IsTrue(CounterCorridor(boxSpot.x, boxSpot.z));
+            Assert.GreaterOrEqual(Vector2.Distance(new Vector2(boxSpot.x, boxSpot.z), new Vector2(eye.x, eye.z)), .55f);
+        }
     }
 }

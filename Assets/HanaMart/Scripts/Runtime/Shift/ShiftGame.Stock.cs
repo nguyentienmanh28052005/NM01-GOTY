@@ -24,10 +24,12 @@ namespace HanaMart.Shift
         }
 
         readonly Dictionary<string, Shelf> shelves = new();
+        StoreMarker[] shelfProducts = System.Array.Empty<StoreMarker>();
         Material cardboard;
 
         void BindStock(StoreMarker[] sceneObjects)
         {
+            shelfProducts = sceneObjects.Where(marker => marker.kind == StoreMarker.Kind.Product).ToArray();
             var renderers = doors ? doors.GetComponentsInChildren<Renderer>(true) : FindObjectsByType<Renderer>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             BindShelf("shelfRamen", new Vector3(4.138f, .47f, 3.7f));
             BindShelf("shelfMilk", new Vector3(9.338f, .86f, 3.7f));

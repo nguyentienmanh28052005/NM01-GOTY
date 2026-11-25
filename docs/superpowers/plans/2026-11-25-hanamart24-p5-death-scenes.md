@@ -16,10 +16,12 @@ Nguồn chính là `deaths.js`, cùng `game.js:cinematic, updateCinematic, appar
 
 216/216 EditMode. MCP chạy trọn 4 cảnh, kiểm vết nứt kính và 6 bóng Mi-rae, cleanup khi retry. Ảnh `docs/visual/deaths/guest-scenes.jpg`.
 
-## Task 3 — Cảnh với thiết bị và địa điểm
+## Task 3 — Cảnh với thiết bị và địa điểm (xong)
 
 - Dịch `phone`, `freezer`, `cctv`, `box13`, `alley`, `blackout`, `red`, `chase`, `fired` và `lunge` dự phòng, cùng mọi biến thể trong nguồn.
 - Test lịch lệnh, màu sáng, quy tắc vị trí không xuyên quầy/kệ và khôi phục trạng thái. Kiểm qua MCP, toàn assembly GREEN, ảnh các cảnh tiêu biểu, cập nhật HANDOFF và commit từng task.
+
+220/220 EditMode (`e49104ecea974fe686eaf89ccf1525d9`). MCP chạy trọn 11 biến thể (`death-objects.json`), sửa bind đèn con, gỡ `BatchingStatic` cho cửa/nắp tủ đông/14 máng đèn trần, nối `HemisphereAmbient` + phát sáng máng đèn, fallback hành lang `DeathSpot`, và guard `Actor` khi thoát Play. Ảnh `docs/visual/deaths/object-scenes.jpg`.
 
 ## Task 4 — Nhịp phim giữa ca
 

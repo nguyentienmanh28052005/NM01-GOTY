@@ -26,8 +26,10 @@ namespace HanaMart.Shift
             public readonly List<Actor> Actors = new();
             public readonly List<UnityEngine.Object> Objects = new();
             public readonly List<(GameObject item, bool active)> Hidden = new();
-            public readonly List<(ShopLight light, bool off, float flicker)> Lights = new();
-            public float SavedCine, SavedFade, SavedRed, SavedGlitch, SavedWarp, SavedWhite, SavedPulse, SavedAmbient, SavedReflection;
+            public readonly List<(ShopLight light, bool off, float flicker, Color color)> Lights = new();
+            public readonly List<Action> Restore = new();
+            public float SavedCine, SavedFade, SavedRed, SavedGlitch, SavedWarp, SavedWhite, SavedPulse, SavedAmbient, SavedReflection, SavedLitAmbient, SavedAmbientLevel;
+            public Color SavedLitTint, SavedAmbientTint;
             public bool InsidePower, OutsidePower;
             public float Dt => Cut.Delta;
 
@@ -79,6 +81,7 @@ namespace HanaMart.Shift
                 Camera = new DeathCamera(view.transform.position, view.transform.rotation), Cut = deathCuts.Begin(rule),
                 InsidePower = insidePower, OutsidePower = outsidePower,
                 SavedAmbient = RenderSettings.ambientIntensity, SavedReflection = RenderSettings.reflectionIntensity,
+                SavedLitAmbient = litAmbient, SavedLitTint = litTint, SavedAmbientLevel = ambientLevel, SavedAmbientTint = ambientTint,
             };
             if (stage.Film)
             {
@@ -90,13 +93,22 @@ namespace HanaMart.Shift
                 stage.SavedWhite = stage.Film.white;
                 stage.SavedPulse = stage.Film.pulse;
             }
-            foreach (var light in lamps) stage.Lights.Add((light, light.Off, light.FlickerUntil));
+            foreach (var light in lamps) stage.Lights.Add((light, light.Off, light.FlickerUntil, light.Lamp.color));
             stage.Sequence.Push(stage.Cut.Kind switch
             {
                 "counter" => DeathCounter(stage),
                 "childMom" => DeathChildMom(stage),
                 "storage" => DeathStorage(stage),
                 "mirae" => DeathMirae(stage),
+                "phone" => DeathPhone(stage),
+                "freezer" => DeathFreezer(stage),
+                "cctv" => DeathCctv(stage),
+                "box13" => DeathBox(stage),
+                "alley" => DeathAlley(stage),
+                "blackout" => DeathBlackout(stage),
+                "red" => DeathRed(stage),
+                "chase" => DeathChase(stage),
+                "fired" => DeathFired(stage),
                 _ => DeathLunge(stage),
             });
             player.ExternalView = true;
@@ -171,7 +183,7 @@ namespace HanaMart.Shift
             {
                 var state = light.light;
                 float flicker = state.FlickerUntil > Time.time && Mathf.Sin(Time.time * 47 + state.Lamp.GetInstanceID()) < .35f ? .19f : 1;
-                state.Lamp.intensity = state.Off || !(state.Inside ? insidePower : outsidePower) ? 0 : state.Brightness * flicker;
+                ApplyLamp(state, state.Off || !(state.Inside ? insidePower : outsidePower) ? 0 : flicker);
             }
             if (stage.ClockSpin && !stage.Shown) ClockCaption = $"{RandomIndex(24):00}:{RandomIndex(60):00}";
             if (!stage.Film) return;
@@ -208,12 +220,17 @@ namespace HanaMart.Shift
             foreach (var actor in stage.Actors) if (actor) actor.Remove();
             foreach (var item in stage.Objects) if (item) Destroy(item);
             foreach (var state in stage.Hidden) if (state.item) state.item.SetActive(state.active);
+            litAmbient = stage.SavedLitAmbient;
+            litTint = stage.SavedLitTint;
             foreach (var state in stage.Lights)
             {
                 state.light.Off = state.off;
                 state.light.FlickerUntil = state.flicker;
+                if (state.light.Lamp) state.light.Lamp.color = state.color;
             }
+            foreach (var restore in stage.Restore) restore();
             Power(stage.InsidePower, stage.OutsidePower);
+            ApplyAmbient(stage.SavedAmbientLevel, stage.SavedAmbientTint);
             RenderSettings.ambientIntensity = stage.SavedAmbient;
             RenderSettings.reflectionIntensity = stage.SavedReflection;
             if (!stage.Film) return;
@@ -227,27 +244,8 @@ namespace HanaMart.Shift
             stage.Film.Push();
         }
 
-        Vector3 DeathSpot(DeathStage stage, float distance, float preference = 0)
-        {
-            var eye = stage.Eye;
-            var forward = stage.Forward;
-            if (forward.sqrMagnitude < .001f) forward = Vector3.forward;
-            foreach (var angle in new[] { preference, preference + .6f, preference - .6f, preference + 1.2f, preference - 1.2f,
-                preference + 1.8f, preference - 1.8f, Mathf.PI })
-            {
-                float c = Mathf.Cos(angle), s = Mathf.Sin(angle);
-                var direction = new Vector3(forward.x * c - forward.z * s, 0, forward.x * s + forward.z * c);
-                bool open = true;
-                for (float step = .25f; step <= distance; step += .12f)
-                {
-                    var cell = eye + direction * step;
-                    if (!player.Navigation.Walkable(cell.x, cell.z)) { open = false; break; }
-                }
-                var end = eye + direction * distance;
-                if (open && player.Navigation.Walkable(end.x, end.z)) return new Vector3(end.x, 0, end.z);
-            }
-            return new Vector3(eye.x, 0, eye.z);
-        }
+        Vector3 DeathSpot(DeathStage stage, float distance, float preference = 0) =>
+            DeathStaging.FindSpot(stage.Eye, stage.Forward, distance, preference, player.Navigation.Walkable);
 
         Actor DeathActor(DeathStage stage, ActorOptions look, Vector3 position)
         {

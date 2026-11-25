@@ -41,6 +41,32 @@ namespace HanaMart.EditorTools
             EditorUtility.SetDirty(probe); AssetDatabase.SaveAssets();
         }
 
+        [MenuItem("HanaMart/Fix Dynamic Static Flags")]
+        public static void FixDynamicStaticFlags()
+        {
+            var scene = SceneManager.GetActiveScene();
+            if (scene.path != ScenePath) scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            foreach (var marker in Object.FindObjectsByType<StoreMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (!IsDynamicLeaf(marker.key)) continue;
+                foreach (var tr in marker.GetComponentsInChildren<Transform>(true))
+                    GameObjectUtility.SetStaticEditorFlags(tr.gameObject, 0);
+            }
+            var store = GameObject.Find("Store");
+            if (store)
+            {
+                foreach (var renderer in store.GetComponentsInChildren<Renderer>(true))
+                {
+                    if (renderer.transform.position.y <= 2.94f || renderer.transform.position.y >= 2.97f) continue;
+                    var mat = renderer.sharedMaterial;
+                    if (mat && mat.HasProperty("_EmissionColor") && mat.GetColor("_EmissionColor").maxColorComponent > .1f)
+                        GameObjectUtility.SetStaticEditorFlags(renderer.gameObject, 0);
+                }
+            }
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+        }
+
         [MenuItem("HanaMart/Build Store")]
         public static void BuildAndSave()
         {
@@ -79,7 +105,11 @@ namespace HanaMart.EditorTools
             return root;
         }
 
-        static void Walk(JArray nodes, JArray indices, List<Transform> candidates)
+        static bool IsDynamicLeaf(string name) =>
+            name == "R:door" || name == "R:backDoor" || name == "R:freezerLid" ||
+            name.StartsWith("S:fridgeDoors[") || (name.StartsWith("S:microwaves[") && name.EndsWith(".door"));
+
+        static void Walk(JArray nodes, JArray indices, List<Transform> candidates, bool dynamicBranch = false)
         {
             int ptr = 0;
             foreach (var idxTok in indices)
@@ -89,9 +119,10 @@ namespace HanaMart.EditorTools
                 Transform t = null;
                 for (int k = ptr; k < candidates.Count; k++) if (SameNode(candidates[k].name, name)) { t = candidates[k]; ptr = k + 1; break; }
                 if (t == null) continue;
-                Mark(t.gameObject, name, j["extras"] as JObject);
+                bool branch = dynamicBranch || IsDynamicLeaf(name);
+                Mark(t.gameObject, name, j["extras"] as JObject, branch);
                 if (j["children"] is JArray ch)
-                    Walk(nodes, ch, Enumerable.Range(0, t.childCount).Select(i => t.GetChild(i)).ToList());
+                    Walk(nodes, ch, Enumerable.Range(0, t.childCount).Select(i => t.GetChild(i)).ToList(), branch);
             }
         }
 
@@ -99,7 +130,7 @@ namespace HanaMart.EditorTools
         static bool SameNode(string unityName, string gltfName) =>
             unityName == gltfName || (unityName.Length > gltfName.Length + 1 && unityName.StartsWith(gltfName + "_") && unityName.Substring(gltfName.Length + 1).All(char.IsDigit));
 
-        static void Mark(GameObject go, string name, JObject ex)
+        static void Mark(GameObject go, string name, JObject ex, bool dynamicBranch)
         {
             StoreMarker.Kind kind;
             if (name.StartsWith("P:")) kind = StoreMarker.Kind.Product;
@@ -111,11 +142,12 @@ namespace HanaMart.EditorTools
             else kind = StoreMarker.Kind.Static;
             if (ex != null && ex["shaderMaterial"] != null && kind == StoreMarker.Kind.Ref) kind = StoreMarker.Kind.ShaderMesh;
 
+            bool ceilingPanel = go.transform.position.y > 2.94f && go.transform.position.y < 2.97f;
             if (kind != StoreMarker.Kind.Static)
             {
                 var m = go.AddComponent<StoreMarker>(); m.kind = kind; m.key = name; m.json = ex?.ToString(Newtonsoft.Json.Formatting.None) ?? "";
             }
-            else if (go.GetComponent<MeshRenderer>())
+            else if (!dynamicBranch && !ceilingPanel && go.GetComponent<MeshRenderer>())
                 GameObjectUtility.SetStaticEditorFlags(go, StaticEditorFlags.BatchingStatic | StaticEditorFlags.ReflectionProbeStatic | StaticEditorFlags.OccludeeStatic | StaticEditorFlags.OccluderStatic);
 
             if (kind == StoreMarker.Kind.Light) AddLight(go, ex);

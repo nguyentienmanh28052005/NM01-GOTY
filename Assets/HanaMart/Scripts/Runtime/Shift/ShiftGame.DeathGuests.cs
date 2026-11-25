@@ -229,7 +229,7 @@ namespace HanaMart.Shift
         void DeathDark()
         {
             Power(false, outsidePower);
-            RenderSettings.ambientIntensity = baseAmbient * .02f;
+            ApplyAmbient(.02f, Color.white);
             RenderSettings.reflectionIntensity = baseReflection * .04f;
         }
 
