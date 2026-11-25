@@ -4,12 +4,14 @@ Nguồn hành vi là `source/src/game.js` trong bản Three.js. `GAME_DOC.md` gi
 
 Mỗi task bắt đầu bằng test có `[Timeout]` và vòng lặp hữu hạn. Xác nhận RED qua MCP for Unity trước khi viết logic, chạy lại toàn bộ EditMode sau từng nhóm thay đổi, sau đó cập nhật HANDOFF, sổ quyết định và commit trên `manh`.
 
-## Task 1 — Đồng hồ, lịch và checkpoint
+## Task 1 — Đồng hồ, lịch và checkpoint (xong)
 
 - Tách đồng hồ ca thành cơ chế tăng 1 phút game mỗi 6/7/8 giây theo các mốc 120 và 240, giới hạn tại 360. Đóng băng đồng hồ khi đọc giấy hoặc đối thoại. Đồng hồ giả 04:44 chỉ đổi giá trị hiển thị.
 - Tạo lịch có định danh và trạng thái đã chạy cho từng mốc trong `_buildEvents`. Dùng nguồn ngẫu nhiên tiêm được cho test và bot. Giữ thứ tự checkpoint, fax, đổi phase, tủ đông, giao hàng và các bẫy đã đặt lịch.
 - Khôi phục giờ, cảnh cáo, nhật ký và cờ lâu dài từ checkpoint. Gỡ các cờ tức thời theo `loadCheckpoint`, tái lập lịch và nhiệm vụ theo điều kiện của bản gốc. Giữ thông tin học được và mức nới lỗi qua lần thử lại trong cùng ca.
 - Test mốc cố định, cửa sổ jitter, khoảng cách dị thường, mỗi mốc chạy một lần, checkpoint lúc reload và giảm cảnh cáo đúng điều kiện.
+
+137/137 EditMode đạt. Lịch bản gốc có 29 mốc cốt truyện. 4/6/8 là số dị thường tối đa mỗi phase vì dừng sau 300 lần thử. Đã chạy lại `_buildEvents` JavaScript với hai seed chung để kiểm số lượng và thời điểm. `ShiftRun` gọi checkpoint trước sự kiện cùng giờ và phát lại sự kiện đúng phút checkpoint khi retry.
 
 ## Task 2 — Khách, chào hỏi và quầy thu ngân
 

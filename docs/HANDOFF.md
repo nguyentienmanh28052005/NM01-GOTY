@@ -74,7 +74,12 @@ Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ b
   RED 7/8 (`dda3e004cec74c1b8006f7c976602cab`) → **124/124 EditMode GREEN** (`a44961fc891b4b6198260524a9b9ba2e`), gồm tuyến NavMesh hoàn chỉnh từ vỉa hè ra hẻm qua cả ba cửa và điểm đặt ngoài phố.
   **Task 5 XONG**: test 60 s cho cả bốn Humanoid bắt một bước cắt ô góc và sót mesh tạm khi hủy trong EditMode. Sửa bằng kiểm từng cạnh ô khi làm mượt đường, đi tới đúng waypoint, giải phóng tài nguyên rõ ràng khi Remove ở EditMode. RED `83ad4efac6b14e4bb591e5324ba0d8ed` → **128/128 EditMode GREEN**, job `beca836aab4f4578aca1ea83dc01a30b`.
   MCP `HanaMart/QA/Run Actor Route` chạy Play 60.001 s, 5704 khung, khách áo mưa vàng đi 19.45 m tới (2.15, −7), không ô bị chặn nào và log 0 cảnh báo/lỗi. Bốn ảnh ở `docs/visual/characters/actor-route.jpg`. QA mở hai cửa trong Play, chưa có đạo diễn tự mở cửa cho khách. Hai scene được bảo vệ không có diff.
-  **Tiếp theo Kế hoạch 4 Task 1**: đồng hồ, lịch, checkpoint. Kế hoạch 4–7 đã viết, chưa có ca 00:00→06:00.
+
+### Kế hoạch 4 — Kịch bản ca đêm (đang làm)
+
+- **Task 1 XONG**: `ShiftClock`, `ShiftTimeline`, `ShiftProgress`, `ShiftRun`. Đồng hồ 6/7/8 s mỗi phút, chặn ở 06:00, dừng khi đọc giấy/đối thoại, 04:44 giả chỉ đổi hiển thị. 29 mốc cốt truyện, lịch dị thường tối đa 4/6/8 theo đúng 300 lần thử mỗi phase. Đối chiếu bằng chạy `_buildEvents` của nguyên bản với hai seed, đạt đúng các mốc/phân bố.
+- Checkpoint lưu trước fax/phase/giao hàng/tủ đông, retry chạy lại mốc ngay đầu giờ, bỏ cờ tức thời và giữ Sổ tay/mức nới lỗi. Cảnh cáo giảm khi số cảnh cáo giữ nguyên trọn giờ. RED 7/7 (`f10a50125bfb470f81ddde32dd3e85ef`), test tích hợp checkpoint RED (`7ff8a078fd7249cca88d59267e13035b`) → **137/137 EditMode GREEN** (`4f3934f77b004d17a9f1eaef7fd5ae97`).
+- **Tiếp theo Task 2**: đạo diễn khách, chuông/chào, hàng đợi, bán hàng. `ShiftRun` chưa gắn scene. Chưa có ca Unity 00:00→06:00 và chưa so hình nghiệm thu.
 
 ## 6. Việc còn lại sau đó (kế hoạch 3–7, viết chi tiết khi bắt đầu)
 3. Nhân vật `Actor` (mặt nạ quần áo + nhuộm, áo mưa vỏ phồng, trẻ em 0.68, biến hình xương + material reveal, NavMesh, clip `Female Walk` retarget, đứng/thở thủ tục).
