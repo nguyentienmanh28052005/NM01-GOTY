@@ -140,5 +140,78 @@ namespace HanaMart.Tests
                 EditorSceneManager.CloseScene(scene, true);
             }
         }
+
+        [Test]
+        public void ShelfProductsFormCleanFacingBlocksNotSingleItemConfetti()
+        {
+            var scene = EditorSceneManager.OpenScene("Assets/HanaMart/Scenes/HanaMart24.unity", OpenSceneMode.Additive);
+            try
+            {
+                var markers = Object.FindObjectsByType<StoreMarker>(FindObjectsSortMode.None)
+                    .Where(m => m.kind == StoreMarker.Kind.Product)
+                    .ToArray();
+
+                var byRow = new Dictionary<(int side, int tier), List<(float z, string prefabName)>>();
+                var distinctBySide = new Dictionary<int, HashSet<string>>();
+
+                foreach (var m in markers)
+                {
+                    Vector3 tp = ThreeCoords.ToUnity(m.transform.position);
+                    if (tp.z < 1.5f || tp.x < 3.5f || tp.x > 11.0f) continue;
+
+                    Transform prodChild = null;
+                    for (int i = 0; i < m.transform.childCount; i++)
+                    {
+                        var ch = m.transform.GetChild(i);
+                        if (ch.name.StartsWith("Product_")) { prodChild = ch; break; }
+                    }
+                    if (prodChild == null) continue;
+
+                    int side = tp.x < 4.6f ? 0 : (tp.x < 5.9f ? 1 : (tp.x < 7.2f ? 2 : (tp.x < 8.5f ? 3 : (tp.x < 9.8f ? 4 : 5))));
+                    int tier = tp.y < 0.35f ? 0 : (tp.y < 0.72f ? 1 : (tp.y < 1.10f ? 2 : 3));
+
+                    if (!byRow.TryGetValue((side, tier), out var list))
+                        byRow[(side, tier)] = list = new List<(float, string)>();
+                    list.Add((tp.z, prodChild.name));
+
+                    if (!distinctBySide.TryGetValue(side, out var set))
+                        distinctBySide[side] = set = new HashSet<string>();
+                    set.Add(prodChild.name);
+                }
+
+                int totalItems = 0;
+                int totalRuns = 0;
+                foreach (var kv in byRow)
+                {
+                    var sorted = kv.Value.OrderBy(x => x.z).ToList();
+                    string prev = null;
+                    foreach (var it in sorted)
+                    {
+                        totalItems++;
+                        if (it.prefabName != prev)
+                        {
+                            totalRuns++;
+                            prev = it.prefabName;
+                        }
+                    }
+                }
+
+                Assert.Greater(totalItems, 200, "Expected >200 aisle shelf items");
+                float avgRunLength = (float)totalItems / totalRuns;
+                Assert.GreaterOrEqual(avgRunLength, 4.0f,
+                    $"Expected clean facing blocks (avg run >= 4.0), but got {avgRunLength:F2} (confetti)");
+
+                for (int side = 0; side < 6; side++)
+                {
+                    Assert.IsTrue(distinctBySide.ContainsKey(side), $"Missing aisle side {side}");
+                    Assert.GreaterOrEqual(distinctBySide[side].Count, 4,
+                        $"Aisle side {side} should have >= 4 distinct prefabs, got {distinctBySide[side].Count}");
+                }
+            }
+            finally
+            {
+                EditorSceneManager.CloseScene(scene, true);
+            }
+        }
     }
 }

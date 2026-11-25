@@ -87,15 +87,24 @@ namespace HanaMart.EditorTools
                 var mat = CategoryMaterial(kv.Key, kv.Value[0].sharedMaterial);
                 var readableTex = LoadReadableTexture(mat.GetTexture("_BaseMap"));
 
-                var vols = kv.Value.Select(r => r.bounds.size.x * r.bounds.size.y * r.bounds.size.z).OrderBy(v => v).ToList();
+                // Ưu tiên thư viện mẫu đơn lẻ chuẩn ở vùng trên cao của GLB (y > 15) thay vì cụm kệ ghép
+                var templates = kv.Value.Where(r => r.bounds.center.y > 15f).ToList();
+                var thickTemplates = templates.Where(r =>
+                {
+                    var s = r.bounds.size;
+                    return Mathf.Min(s.x, Mathf.Min(s.y, s.z)) >= 0.07f;
+                }).ToList();
+                var pool = thickTemplates.Count >= 3 ? thickTemplates : (templates.Count >= 3 ? templates : kv.Value);
+
+                var vols = pool.Select(r => r.bounds.size.x * r.bounds.size.y * r.bounds.size.z).OrderBy(v => v).ToList();
                 float med = Mathf.Max(vols[vols.Count / 2], 1e-6f);
 
                 // Phân tích hình học, mặt nhãn, UV rect và màu đại diện cho từng mesh đơn lẻ
                 var candidates = new List<Candidate>();
-                foreach (var r in kv.Value)
+                foreach (var r in pool)
                 {
                     float vol = r.bounds.size.x * r.bounds.size.y * r.bounds.size.z;
-                    if (vol < med * 0.25f || vol > med * 4.0f) continue;
+                    if (vol < med * 0.2f || vol > med * 5.0f) continue;
 
                     var mf = r.GetComponent<MeshFilter>();
                     if (mf == null || mf.sharedMesh == null) continue;

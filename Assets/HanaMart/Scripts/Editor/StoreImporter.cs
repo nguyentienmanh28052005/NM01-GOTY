@@ -230,7 +230,7 @@ namespace HanaMart.EditorTools
         }
 
         /// Thay hình học hàng hóa Three.js bằng prefab asset siêu thị (giữ thuốc lá),
-        /// phân nhóm theo biển treo từng dãy kệ, quay mặt ra lối đi và sắp xếp màu theo ProductPlanogram.
+        /// gom thành từng khối mặt hàng (facing block) theo tầng kệ giống demo, quay mặt ra lối đi và co vừa ô.
         static void ReplaceProducts(GameObject root)
         {
             var cat = AssetDatabase.LoadAssetAtPath<ProductCatalog>(ProductExtractor.CatalogPath);
@@ -247,10 +247,27 @@ namespace HanaMart.EditorTools
                 var ex = JObject.Parse(m.json);
                 string origType = (string)ex["type"];
                 Vector3 tp = ThreeCoords.ToUnity(m.transform.position);
-                var (zoneId, facing, effType) = ClassifyShelfSlot(tp, origType, cat);
-                int row = Mathf.RoundToInt(tp.y / 0.36f);
-                int col = zoneId == 6 ? Mathf.RoundToInt(tp.x / 0.35f) : Mathf.RoundToInt(tp.z / 0.35f);
-                items.Add((m, ex, effType, facing, new ProductPlanogram.BlockSlot { zone = zoneId, row = row, col = col }));
+
+                int tier;
+                int blockCol;
+                if (tp.z < 1.0f)
+                {
+                    tier = Mathf.Clamp(Mathf.RoundToInt((tp.y - 0.26f) / 0.40f), 0, 4);
+                    blockCol = Mathf.FloorToInt((tp.x - 2.35f) / 0.80f);
+                }
+                else if (tp.x > 11.0f)
+                {
+                    tier = Mathf.Clamp(Mathf.RoundToInt((tp.y - 0.55f) / 0.36f), 0, 3);
+                    blockCol = Mathf.FloorToInt((tp.z - 1.15f) / 0.68f);
+                }
+                else
+                {
+                    tier = tp.y < 0.35f ? 0 : (tp.y < 0.72f ? 1 : (tp.y < 1.10f ? 2 : 3));
+                    blockCol = Mathf.Clamp(Mathf.FloorToInt((tp.z - 1.75f) / 0.76f), 0, 4);
+                }
+
+                var (zoneId, facing, effType) = ClassifyShelfSlot(tp, tier, origType, cat);
+                items.Add((m, ex, effType, facing, new ProductPlanogram.BlockSlot { zone = zoneId, row = tier, col = blockCol }));
             }
 
             foreach (var grp in items.GroupBy(it => (it.slot.zone, it.type)))
@@ -263,13 +280,24 @@ namespace HanaMart.EditorTools
                     ? e.colors
                     : Enumerable.Range(0, e.prefabs.Length).Select(k => Color.HSVToRGB((float)k / e.prefabs.Length, 0.7f, 0.9f)).ToArray();
 
-                var slots = list.Select(it => it.slot).ToArray();
-                int[] skuIndices = ProductPlanogram.AssignColorBlocks(slots, palette, grp.Key.zone * 17 + grp.Key.type.GetHashCode());
+                // Gán màu theo từng khối (tier, blockCol) duy nhất để mọi món trong cùng 1 khối giống hệt nhau
+                var uniqueBlocks = list
+                    .Select(it => it.slot)
+                    .GroupBy(s => (s.zone, s.row, s.col))
+                    .Select(g => g.First())
+                    .ToArray();
 
-                for (int idx = 0; idx < list.Count; idx++)
+                int[] blockSkus = ProductPlanogram.AssignColorBlocks(
+                    uniqueBlocks, palette, grp.Key.zone * 17 + grp.Key.type.GetHashCode());
+
+                var skuByBlock = new Dictionary<(int zone, int row, int col), int>(uniqueBlocks.Length);
+                for (int b = 0; b < uniqueBlocks.Length; b++)
+                    skuByBlock[(uniqueBlocks[b].zone, uniqueBlocks[b].row, uniqueBlocks[b].col)] = blockSkus[b];
+
+                foreach (var it in list)
                 {
-                    var it = list[idx];
-                    var prefab = e.prefabs[skuIndices[idx] % e.prefabs.Length];
+                    int skuIdx = skuByBlock[(it.slot.zone, it.slot.row, it.slot.col)];
+                    var prefab = e.prefabs[skuIdx % e.prefabs.Length];
                     Object.DestroyImmediate(it.marker.GetComponent<MeshRenderer>());
                     Object.DestroyImmediate(it.marker.GetComponent<MeshFilter>());
 
@@ -282,13 +310,20 @@ namespace HanaMart.EditorTools
                     float fitW = (float)it.ex[rotated90 ? "d" : "w"];
                     float fitH = (float)it.ex["h"];
                     float fitD = (float)it.ex[rotated90 ? "w" : "d"];
-                    float s = Mathf.Min(fitW / Mathf.Max(size.x, 1e-4f), fitH / Mathf.Max(size.y, 1e-4f), fitD / Mathf.Max(size.z, 1e-4f)) * 0.94f;
-                    inst.transform.localScale = Vector3.one * s;
+
+                    float rawX = fitW / Mathf.Max(size.x, 1e-4f) * 0.95f;
+                    float rawY = fitH / Mathf.Max(size.y, 1e-4f) * 0.95f;
+                    float rawZ = fitD / Mathf.Max(size.z, 1e-4f) * 0.95f;
+                    float baseXY = Mathf.Min(rawX, rawY);
+                    float sx = Mathf.Min(rawX, baseXY * 1.45f);
+                    float sy = Mathf.Min(rawY, baseXY * 1.45f);
+                    float sz = Mathf.Min(rawZ, Mathf.Max(sx, sy) * 1.6f);
+                    inst.transform.localScale = new Vector3(sx, sy, sz);
                 }
             }
         }
 
-        static (int zoneId, Vector3 facing, string effectiveType) ClassifyShelfSlot(Vector3 tp, string origType, ProductCatalog cat)
+        static (int zoneId, Vector3 facing, string effectiveType) ClassifyShelfSlot(Vector3 tp, int tier, string origType, ProductCatalog cat)
         {
             string PickIfExists(string preferred, string fallback) =>
                 cat.Find(preferred) != null ? preferred : fallback;
@@ -301,8 +336,6 @@ namespace HanaMart.EditorTools
             if (tp.x > 11.0f)
                 return (7, Vector3.right, origType);
 
-            int bay = Mathf.Clamp(Mathf.FloorToInt((tp.z - 1.6f) / 0.85f), 0, 5);
-
             // Dãy 1 (x = 4.6): MÌ & ĐỒ ĂN NHANH
             if (tp.x < 5.9f)
             {
@@ -310,8 +343,8 @@ namespace HanaMart.EditorTools
                 Vector3 facing = left ? Vector3.right : Vector3.left;
                 if (left)
                     return (0, facing, origType); // Giữ nguyên shelfRamen restock slot
-                string[] rightTypes = { "chips", "candy", "banana", "ramenCup" };
-                return (1, facing, PickIfExists(rightTypes[bay % rightTypes.Length], origType));
+                string[] rightByTier = { "chips", "chips", "ramenBag", "ramenCup" };
+                return (1, facing, PickIfExists(rightByTier[Mathf.Clamp(tier, 0, 3)], origType));
             }
 
             // Dãy 2 (x = 7.2): BÁNH KẸO
@@ -319,23 +352,23 @@ namespace HanaMart.EditorTools
             {
                 bool left = tp.x < 7.2f;
                 Vector3 facing = left ? Vector3.right : Vector3.left;
-                string[] aisle2Types = left
-                    ? new[] { "candy", "chips", "banana", "coffee" }
-                    : new[] { "chips", "banana", "candy", "coffee" };
-                return (left ? 2 : 3, facing, PickIfExists(aisle2Types[bay % aisle2Types.Length], origType));
+                string[] byTier = left
+                    ? new[] { "chips", "candy", "chips", "candy" }
+                    : new[] { "banana", "candy", "chips", "coffee" };
+                return (left ? 2 : 3, facing, PickIfExists(byTier[Mathf.Clamp(tier, 0, 3)], origType));
             }
 
             // Dãy 3 (x = 9.8): ĐỒ DÙNG · ĐỒ UỐNG
             {
                 bool left = tp.x < 9.8f;
                 Vector3 facing = left ? Vector3.right : Vector3.left;
-                // Giữ nguyên slot restock shelfMilk (z trong [3.2, 4.2]) ở mặt trái
-                if (left && tp.z >= 3.2f && tp.z <= 4.2f)
+                // Giữ nguyên slot restock shelfMilk (z trong [3.2, 4.2] ở tầng 2)
+                if (left && tier == 2 && tp.z >= 3.2f && tp.z <= 4.2f)
                     return (4, facing, origType);
-                string[] aisle3Types = left
-                    ? new[] { "household", "bottle", "coffee", "household2" }
-                    : new[] { "household2", "soju", "household", "bottle" };
-                return (left ? 4 : 5, facing, PickIfExists(aisle3Types[bay % aisle3Types.Length], origType));
+                string[] byTier = left
+                    ? new[] { "household", "household2", "banana", "coffee" }
+                    : new[] { "lunch", "household", "household2", "household" };
+                return (left ? 4 : 5, facing, PickIfExists(byTier[Mathf.Clamp(tier, 0, 3)], origType));
             }
         }
 
