@@ -17,6 +17,9 @@ namespace HanaMart.Shift
         Vector3 callPosition;
         int deliveryCount;
         public string Ending { get; private set; }
+        public Vector2? ChaseSafeThreePos => chaseLight != null && HasFlag("chase")
+            ? new Vector2(-chaseLight.Lamp.transform.position.x, chaseLight.Lamp.transform.position.z)
+            : null;
 
         void ResetHazards()
         {

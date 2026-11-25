@@ -15,8 +15,8 @@ Chỉ đánh dấu hoàn tất khi có bằng chứng cho các mục nghiệm th
 - Đã chụp 14 góc Three.js (`capture_three_cdp.mjs`) ↔ Unity (`HanaMart/Capture Viewpoints`) + 2 cảnh động Play (`dynamic-scenes.jpg`); cập nhật `docs/visual/compare/report.md` (`alley` từ −48% → −4%, `fridges` −21% do hàng thay thế, ghi rõ khác biệt 4 model & asset đã duyệt).
 - Thực đo URP Play mode 2560×1440 (`Logs/HanaMart/perf-report.json`, 3 NPC + FX + HUD): `low` 56.4 FPS (17.73 ms), `medium` 55.5 FPS (18.01 ms), `medium_dynres` 67.1 FPS (14.90 ms), `high` 70.2 FPS (14.25 ms).
 
-## Task 3 — Chơi một ca thật và kiểm tra bàn giao
+## Task 3 — Chơi một ca thật và kiểm tra bàn giao **(XONG)**
 
-- Qua Unity Play và MCP, bắt đầu 00:00, đi qua mỗi giai đoạn, thử một retry đúng checkpoint, đi đến 06:00 và xác nhận màn kết thúc. Ghi mốc và thời lượng thực. Kiểm riêng bẫy hoặc kết thúc chưa gặp trong ca bằng lượt seed phù hợp.
-- Kiểm Console và log trong suốt ca, sửa lỗi có thể tái hiện, chạy lại toàn assembly. Kiểm hai scene được bảo vệ, nhánh `manh`, các tệp bị loại và commit cuối.
-- Cập nhật HANDOFF cùng báo cáo so hình và các bằng chứng ca thử. Báo rõ phần nào đã chơi, phần nào chỉ có test hoặc mô phỏng.
+- Đã thêm `Assets/HanaMart/Scripts/Editor/ShiftFullPlayQA.cs` (`HanaMart/QA/Run Full Shift Acceptance`) và `ShiftGame.ChaseSafeThreePos` (`ShiftGame.Night.cs`).
+- Qua Unity Play + MCP (`Logs/HanaMart/full-shift-play.json`): chạy liên tục `00:00→06:00` (seed `7001`, `timeScale = 30`, **99.54 s** thực, **0 chết ngoài ý muốn**), đi qua Phase 1/2/3, kiểm chứng retry đúng checkpoint `02:00` (tủ đông luật 6), qua Giờ Đỏ `05:15` và đạt Kết thúc A lúc `06:00` (`94.34 s`); kiểm thêm Kết thúc B (5 nhật ký + Ji-ho `05:00→06:00`) và bẫy luật 12 (`04:44`) + luật 10 (mất điện) với retry phục hồi sạch.
+- `Logs/HanaMart/play-errors.log` rỗng, Unity Console 0 lỗi/cảnh báo, toàn bộ `HanaMart.Tests.EditMode` đạt **260/260 PASS** (`p7-final-full`), hai scene bảo vệ không có diff, nhánh `manh` sạch.
