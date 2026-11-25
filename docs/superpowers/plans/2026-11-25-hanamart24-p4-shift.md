@@ -13,11 +13,13 @@ Mỗi task bắt đầu bằng test có `[Timeout]` và vòng lặp hữu hạn.
 
 137/137 EditMode đạt. Lịch bản gốc có 29 mốc cốt truyện. 4/6/8 là số dị thường tối đa mỗi phase vì dừng sau 300 lần thử. Đã chạy lại `_buildEvents` JavaScript với hai seed chung để kiểm số lượng và thời điểm. `ShiftRun` gọi checkpoint trước sự kiện cùng giờ và phát lại sự kiện đúng phút checkpoint khi retry.
 
-## Task 2 — Khách, chào hỏi và quầy thu ngân
+## Task 2 — Khách, chào hỏi và quầy thu ngân (xong)
 
 - Dịch `updateDirector`, `spawnVisit` và mẫu khách. Giữ trọng số, giới hạn, khoảng lặng, giảm xác suất khi lặp và số khách cùng lúc. Dùng Actor và đường đi của Kế hoạch 3, với cùng tọa độ `NODES`.
 - Port trình tự khách đến, chuông 6 giây để chào, xếp hàng, lấy hàng, phục vụ, yêu cầu hâm, xử lý hàng quét và túi. Dùng hàng thay thế và tên hiển thị đã duyệt.
 - Test chuông thật/giả, thứ tự xếp hàng, lựa chọn đúng/sai cho áo mưa, trẻ em, khách không bóng và yêu cầu vào kho. Kiểm chế độ 2 khách, bỏ lượt đã rời cửa hàng và cleanup đồ trên quầy.
+
+161/161 EditMode. MCP Play `Run Checkout Visit` xác nhận khách áo mưa hợp lệ bước vào, kích hoạt chào, đặt và quét hai mì ly, trả ₩3.000, rời tiệm và dọn đồ. Điều phối lò và các biến cố nhận từ `SceneAction`/`RingRequested` ở Task 3–4.
 
 ## Task 3 — Nhiệm vụ và dị thường
 

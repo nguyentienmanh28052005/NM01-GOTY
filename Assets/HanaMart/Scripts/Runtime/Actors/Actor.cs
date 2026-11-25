@@ -14,6 +14,7 @@ namespace HanaMart.Actors
         public float yaw, speed = 1.15f;
         public bool alive = true, moving;
         public bool AutoTick { get; set; } = true;
+        public bool OnRoute => path != null && waypoint < path.Count;
         public Vector3? lookTarget;
         public ActorMotion Motion { get; } = new ActorMotion();
         public GameObject Model { get; private set; }
@@ -154,7 +155,7 @@ namespace HanaMart.Actors
 
         void BindMaterials(ActorCatalog.Entry setup)
         {
-            bool rain = Options.coat == "raincoat";
+            bool rain = Options.coat == "raincoat" || Options.rainShell;
             Material bodyMaterial = null;
             Material shellMaterial = null;
             foreach (var slot in setup.renderers)
