@@ -15,7 +15,9 @@ Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ b
 ## 2. Tài liệu
 - Spec (đã duyệt): `docs/superpowers/specs/2026-11-25-hanamart24-unity-port-design.md`
 - Kế hoạch 1 (XONG): `docs/superpowers/plans/2026-11-25-hanamart24-p1-foundation.md`
-- Kế hoạch 2 (ĐANG LÀM): `docs/superpowers/plans/2026-11-25-hanamart24-p2-player.md` — lộ trình kế hoạch 3–7 ở cuối plan 1.
+- Kế hoạch 2 (XONG): `docs/superpowers/plans/2026-11-25-hanamart24-p2-player.md`.
+- Kế hoạch 3 (ĐANG LÀM): `docs/superpowers/plans/2026-11-25-hanamart24-p3-actors.md`.
+- Kế hoạch 4–7 đã viết: `docs/superpowers/plans/2026-11-25-hanamart24-p4-shift.md`, `2026-11-25-hanamart24-p5-death-scenes.md`, `2026-11-25-hanamart24-p6-interface.md`, `2026-11-25-hanamart24-p7-acceptance.md`.
 - Sổ tiến độ + mọi quyết định ("Ruling"): `.superpowers/sdd/*/progress.md` (git-ignored, đọc trực tiếp).
 - So sánh hình ảnh: `docs/visual/compare/report.md` + ảnh `docs/visual/compare/*.jpg`.
 
@@ -64,7 +66,9 @@ Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ b
   Mũ áo mưa, mask trắng/đen/cười có mesh/material/texture sở hữu riêng; `ActorAccessoryResources` giải phóng khi despawn. Offset đã chỉnh theo xương Head Mixamo qua kiểm hình (không chép nguyên pivot người khối làm mask che mắt).
   TDD: initial RED mask/material, thêm RED mask rỗng do Read/Write, RED bảo vệ chân trần/họa tiết áo, RED phụ kiện → **103/103 GREEN**, job `be13e51ab0aa487a92d4699c25dd8a65`, 12.64 s; test CompilePass ép đủ bốn pass body/rain trên API hiện tại. QA Play log rỗng; ảnh `docs/visual/characters/materials-reveal.jpg` và `face-masks.jpg`.
   QA qua MCP: `HanaMart/QA/Character Materials`, `Character Masks`, `Capture Character Materials` (chỉ Play, không lưu các model thử vào scene). Shader compilation phải synchronous khi chụp, render warmup trước ảnh; file tên reveal dùng invariant culture (tránh dấu phẩy tiếng Việt).
-  **Tiếp theo Task 3**: Actor runtime, clip Humanoid/idle/thở/quay đầu/biến hình xương; sau đó Task 4 navigation + nối Placement walkableAt. Hiện preview material còn T-pose cho ba model vì chưa gắn Animator runtime. Không coi là hoàn thiện nhân vật/game.
+  **Task 3 XONG**: `Actor` dùng PlayableGraph lấy mẫu `Female Walk` theo bước dài 1.3 m, retarget bốn Humanoid, tư thế nghỉ hạ tay, thở/nhìn/lộ dạng bằng xương và shader. Spawn/despawn tự quản lý graph, mesh tạm và material mắt. Trẻ em cao 68%. API nhận đường waypoint Three.js.
+  RED 8/8 với stub (`367134319303457a8abf3a7a3a0086c3`), thêm test đế giày RED (`50b624e05ea54ce6acd265721c043d95`) → Actor GREEN 12/12 (`00ce20b065334b708007719fe8c01ead`). Bù độ cao theo đáy mesh giày skinned, chỉ bake khi blend đi bộ, dùng lại mesh và buffer, đo chi phí ở Kế hoạch 7. Chụp Play phải chờ một frame sau đổi tư thế để skinning cập nhật, dùng bước 1/60 s và y=.012 cho vỉa hè cao .01. Ảnh `docs/visual/characters/actor-motion.jpg`, play-errors.log rỗng.
+  Toàn assembly **115/115 GREEN**, job `b73ac9a32d3446c5aae213b6b76fd151`. **Tiếp theo Task 4**: navigation từ `nav.js` và nối `Placement` với `walkableAt`; Task 5 kiểm đường đi thực tế. Kế hoạch 4–7 mới có tài liệu, chưa có ca 00:00→06:00.
 
 ## 6. Việc còn lại sau đó (kế hoạch 3–7, viết chi tiết khi bắt đầu)
 3. Nhân vật `Actor` (mặt nạ quần áo + nhuộm, áo mưa vỏ phồng, trẻ em 0.68, biến hình xương + material reveal, NavMesh, clip `Female Walk` retarget, đứng/thở thủ tục).

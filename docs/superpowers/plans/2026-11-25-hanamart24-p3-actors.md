@@ -25,11 +25,11 @@ Nguồn: `source/src/person.js`, `game.js` (Actor), `nav.js` trong bản Three.j
 
 ## Task 3 — Actor runtime, animation và biến hình xương
 
-- [ ] Test RED: spawn/despawn catalog; vị trí/yaw Three→Unity; scale .68 không cộng dồn; di chuyển phát Female Walk ở mọi avatar; reveal lặp không trôi xương; reset về 0 phục hồi tư thế.
-- [ ] Actor MonoBehaviour dùng options/catalog, Animator Humanoid + clip Female Walk retarget. Idle đứng tự nhiên + thở/quay đầu thủ tục. Không sửa controller của scene Animation Test.
-- [ ] Giữ hằng số person.js: stride 1.3, blend dt×6; thở sin(t×1.6+phase×.1); reveal dt×1.6; head nâng .34 m; arm length +.55; mắt scale +1.6/emission×6; head roll R×.9×sin(t×.7), snap 1.2..4.4 s, lerp dt×22, jitter .02/.03. Điều chỉnh theo trục xương model thật, không áp tùy tiện vào local Y.
-- [ ] Actor API cho Kế hoạch 4: pos Three, yaw, speed, lookTarget, revealTarget, headSpin, armUp, moveTo/path, remove; quản lý material instance và tài nguyên khi despawn.
-- [ ] Play bốn avatar đi/đứng, child, biến hình; log sạch. Commit + HANDOFF.
+- [x] Test RED: spawn/despawn catalog; vị trí/yaw Three→Unity; scale .68 không cộng dồn; di chuyển phát Female Walk ở mọi avatar; reveal lặp không trôi xương; reset về 0 phục hồi tư thế.
+- [x] Actor MonoBehaviour dùng options/catalog, Animator Humanoid + clip Female Walk retarget. Idle đứng tự nhiên + thở/quay đầu thủ tục. Không sửa controller của scene Animation Test.
+- [x] Giữ hằng số person.js: stride 1.3, blend dt×6; thở sin(t×1.6+phase×.1); reveal dt×1.6; head nâng .34 m; arm length +.55; mắt scale +1.6/emission×6; head roll R×.9×sin(t×.7), snap 1.2..4.4 s, lerp dt×22, jitter .02/.03. Điều chỉnh theo trục xương model thật, không áp tùy tiện vào local Y.
+- [x] Actor API cho Kế hoạch 4: pos Three, yaw, speed, lookTarget, revealTarget, headSpin, armUp, path, remove; quản lý material instance và tài nguyên khi despawn. Tạo đường từ đích bằng navigation ở Task 4.
+- [x] Play bốn avatar đi/đứng, child, biến hình; log sạch. Ảnh `docs/visual/characters/actor-motion.jpg`. Kiểm đế giày 32 mẫu. Commit + HANDOFF.
 
 ## Task 4 — Navigation và mặt đỡ đặt đồ
 

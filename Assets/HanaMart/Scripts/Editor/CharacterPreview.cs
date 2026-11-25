@@ -91,5 +91,93 @@ namespace HanaMart.EditorTools
                 RenderTexture.active=previous;RenderTexture.ReleaseTemporary(target);Object.DestroyImmediate(image);
             }}finally{ShaderUtil.allowAsyncCompilation=asyncCompilation;}
         }
+
+        [MenuItem("HanaMart/QA/Capture Actor Motion")]
+        public static void CaptureActorMotion()
+        {
+            if (!Application.isPlaying) throw new System.InvalidOperationException("Actor preview runs only in Play mode");
+            Application.runInBackground = true;
+            var camera = Camera.main;
+            var player = camera.GetComponent<PlayerController>();
+            player.StartCoroutine(CaptureMotionFrames(camera, player));
+        }
+
+        static System.Collections.IEnumerator CaptureMotionFrames(Camera camera, PlayerController player)
+        {
+            player.GameplayEnabled = false;
+            player.Motor.frozen = true;
+            player.Motor.vel = Vector2.zero;
+            player.Motor.pos = new Vector2(6.6f, 13.8f);
+            player.Motor.eye = 1.52f;
+            player.Motor.SetYawFacing(0, -1);
+            player.Motor.pitch = -.1f;
+            player.Motor.Update(0, default, player.settings, player.Area);
+            player.ApplyPose();
+
+            var previous = GameObject.Find("Actor motion preview");
+            if (previous) Object.DestroyImmediate(previous);
+            var staging = new GameObject("Actor motion preview");
+            var catalog = AssetDatabase.LoadAssetAtPath<ActorCatalog>(ActorSetup.CatalogPath);
+            var actors = new Actor[5];
+            var colors = new[] { 0x055a63, 0x8b3e46, 0x364a52, 0xf2c200, 0x4b5358 };
+            for (int i = 0; i < actors.Length; ++i)
+            {
+                var options = new ActorOptions
+                {
+                    modelIndex = i == 3 ? 1 : i == 4 ? 3 : i,
+                    coat = i == 3 ? "raincoat" : i == 2 ? "child" : "padding",
+                    color = colors[i],
+                    hood = i == 3,
+                    face = i == 3 ? "wide" : "normal",
+                };
+                var actor = Actor.Spawn(catalog, options, new Vector3(4.25f + i * 1.17f, .012f, 10.45f));
+                actor.transform.SetParent(staging.transform, true);
+                actor.lookTarget = ThreeCoords.ToUnity(camera.transform.position);
+                actor.AutoTick = false;
+                actors[i] = actor;
+            }
+            Directory.CreateDirectory("docs/visual/unity");
+            yield return null;
+            CaptureFrame(camera, "docs/visual/unity/actors-idle.png");
+            for (int frame = 0; frame < 20; ++frame)
+                for (int i = 0; i < actors.Length; ++i)
+                    actors[i].StepPose(1f / 60, 1.15f);
+            yield return null;
+            CaptureFrame(camera, "docs/visual/unity/actors-walk.png");
+            actors[3].Motion.revealTarget = 1;
+            for (int frame = 0; frame < 120; ++frame)
+                for (int i = 0; i < actors.Length; ++i)
+                    actors[i].StepPose(1f / 60, 0);
+            yield return null;
+            CaptureFrame(camera, "docs/visual/unity/actors-reveal.png");
+        }
+
+        static void CaptureFrame(Camera camera, string output)
+        {
+            var previousTarget = camera.targetTexture;
+            var previousActive = RenderTexture.active;
+            bool previousAsync = ShaderUtil.allowAsyncCompilation;
+            var target = RenderTexture.GetTemporary(1280, 720, 24, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
+            var image = new Texture2D(1280, 720, TextureFormat.RGB24, false);
+            try
+            {
+                ShaderUtil.allowAsyncCompilation = false;
+                camera.targetTexture = target;
+                camera.Render();
+                camera.Render();
+                RenderTexture.active = target;
+                image.ReadPixels(new Rect(0, 0, 1280, 720), 0, 0);
+                image.Apply();
+                File.WriteAllBytes(output, image.EncodeToPNG());
+            }
+            finally
+            {
+                camera.targetTexture = previousTarget;
+                RenderTexture.active = previousActive;
+                ShaderUtil.allowAsyncCompilation = previousAsync;
+                RenderTexture.ReleaseTemporary(target);
+                Object.DestroyImmediate(image);
+            }
+        }
     }
 }
