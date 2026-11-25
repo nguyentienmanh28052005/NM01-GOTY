@@ -13,18 +13,18 @@ namespace HanaMart.Tests
         [Test]
         public void ComputeUprightAlignmentFixesBackFaceWithoutFlippingUpsideDown()
         {
-            // Package facing -Z with top of label (+Y) corresponding to -dP/dv (i.e. dP/dv = -Y).
+            // Package facing -Z with top of label (+Y) corresponding to Unity +dP/dv (V-bottom-up).
             // Rotating it to face +Z must rotate around Y by 180°, keeping +Y upright (NOT 180° around X).
             Vector3 front = Vector3.back;
-            Vector3 dPdv = Vector3.down;
+            Vector3 dPdv = Vector3.up;
 
             Quaternion rot = ProductPlanogram.ComputeUprightAlignment(front, dPdv);
 
             Vector3 alignedFront = rot * front;
-            Vector3 alignedUp = rot * (-dPdv);
+            Vector3 alignedUp = rot * dPdv;
 
             Assert.Greater(Vector3.Dot(alignedFront, Vector3.forward), 0.99f, "Front face should point +Z");
-            Assert.Greater(Vector3.Dot(alignedUp, Vector3.up), 0.99f, "Label up (-dP/dv) should point +Y");
+            Assert.Greater(Vector3.Dot(alignedUp, Vector3.up), 0.99f, "Label up (+dP/dv) should point +Y");
         }
 
         [Test]

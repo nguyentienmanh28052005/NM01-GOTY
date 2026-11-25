@@ -8,7 +8,7 @@ using HanaMart.Store;
 namespace HanaMart.EditorTools
 {
     /// Tách các món hàng đơn lẻ từ asset siêu thị (GLB) thành prefab + ProductCatalog,
-    /// căn mặt in ảnh quay ra trước (+Z) và dựng thẳng đứng (-dP/dv -> +Y), đồng thời chọn SKU đa dạng màu sắc.
+    /// căn mặt in ảnh quay ra trước (+Z) và dựng thẳng đứng (+dP/dv -> +Y), đồng thời chọn SKU đa dạng màu sắc.
     public static class ProductExtractor
     {
         public const string GlbPath = "Assets/Art/Model/super-market-for-free/source/магазин.glb";
@@ -353,12 +353,12 @@ namespace HanaMart.EditorTools
             }
 
             if (area.Count == 0)
-                return (Vector3.forward, Vector3.down, new Rect(0, 0, 1, 1));
+                return (Vector3.forward, Vector3.up, new Rect(0, 0, 1, 1));
 
             Vector3 bestDir = area.OrderByDescending(kv => kv.Value).First().Key;
             Vector3 dPdv = dPdvSum.TryGetValue(bestDir, out var sum) && sum.sqrMagnitude > 1e-6f
                 ? sum.normalized
-                : Vector3.down;
+                : Vector3.up;
             Vector2 mn = uvMin.TryGetValue(bestDir, out var mnv) ? mnv : Vector2.zero;
             Vector2 mx = uvMax.TryGetValue(bestDir, out var mxv) ? mxv : Vector2.one;
             return (bestDir, dPdv, Rect.MinMaxRect(mn.x, mn.y, mx.x, mx.y));

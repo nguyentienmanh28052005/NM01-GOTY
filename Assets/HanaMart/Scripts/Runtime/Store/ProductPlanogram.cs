@@ -18,12 +18,12 @@ namespace HanaMart.Store
 
         /// <summary>
         /// Computes an orthonormal rotation that aligns <paramref name="frontNormal"/> to +Z
-        /// and label-up (-<paramref name="dPdv"/>) to +Y without flipping upside down.
+        /// and label-up (+<paramref name="dPdv"/> in Unity UV space) to +Y without flipping upside down.
         /// </summary>
         public static Quaternion ComputeUprightAlignment(Vector3 frontNormal, Vector3 dPdv)
         {
             Vector3 front = frontNormal.sqrMagnitude > 1e-6f ? frontNormal.normalized : Vector3.forward;
-            Vector3 up = -dPdv;
+            Vector3 up = dPdv;
             up -= Vector3.Dot(up, front) * front;
 
             if (up.sqrMagnitude < 1e-6f)
