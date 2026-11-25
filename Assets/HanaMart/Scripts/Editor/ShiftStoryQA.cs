@@ -39,6 +39,12 @@ namespace HanaMart.EditorTools
                 Reach(game, 2, 120);
                 ShiftTaskQA.Use(input, markers, "freezer");
                 if (!game.Dead || game.LastDeathRule != 6) throw new InvalidOperationException("Opening the freezer at 02:00 did not trigger rule 6.");
+                double recapAt = Time.realtimeSinceStartupAsDouble + 6;
+                for (int frame = 0; frame < 3000 && game.Dialogue == null && Time.realtimeSinceStartupAsDouble < recapAt; ++frame)
+                {
+                    if (game.ActiveDeath?.CanSkip == true) game.SkipDeath();
+                    yield return null;
+                }
                 game.SelectOption(0);
                 if (game.Dead || game.Run.Clock.Minutes != 120 || !input.Enabled || game.Run.Progress.DeathCount != 1)
                     throw new InvalidOperationException("Retry did not restore input and the 02:00 checkpoint.");

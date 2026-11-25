@@ -57,9 +57,10 @@ namespace HanaMart.Shift
         void LateUpdate()
         {
             if (!root || game.Run == null) return;
-            status.text = $"{game.Run.Clock.Display}\n{game.Run.Progress.Strikes}/3";
+            status.text = $"{game.ClockCaption ?? game.Run.Clock.Display}\n{game.Run.Progress.Strikes}/3";
             subtitle.text = game.Subtitle;
-            greet.text = game.GreetingTime > 0 && game.Dialogue == null && game.PaperTitle == null ? "[G] Chào khách" : "";
+            greet.text = game.ActiveDeath?.CanSkip == true ? "[E] Bỏ qua" :
+                game.GreetingTime > 0 && game.Dialogue == null && game.PaperTitle == null ? "[G] Chào khách" : "";
             paper.SetActive(game.PaperTitle != null);
             if (paper.activeSelf) page.text = $"<color=#ab1826><b>{game.PaperTitle}</b></color>\n\n{game.PaperText}\n\n[Esc] Đóng";
             dialog.SetActive(game.Dialogue != null);

@@ -85,6 +85,7 @@ namespace HanaMart.Shift
         void ResetShift(bool retry)
         {
             StopAllCoroutines();
+            StopDeath();
             ClearGuests();
             if (retry) Run.Retry();
             else { Run.NewShift(); TotalSold = 0; }
@@ -210,9 +211,8 @@ namespace HanaMart.Shift
             ClosePaper();
             CloseDialog();
             player.Rumble(1, 1, .9f);
+            BeginDeath(rule, reason);
             Died?.Invoke(rule, reason);
-            if (Died == null) ShowDialog($"Quy tắc số {rule}", reason,
-                new Choice($"Tiếp tục từ {ShiftClock.Format(Run.Progress.SavedHour * 60)}", Retry));
         }
 
         void Later(float seconds, Action action) => StartCoroutine(Delayed(seconds, action));
@@ -232,6 +232,7 @@ namespace HanaMart.Shift
                 interactor.Pressed -= Pressed;
                 interactor.Holding -= Hold;
             }
+            StopDeath();
             ClearGuests();
             ReleaseCheckoutMaterials();
             ReleaseEnvironment();

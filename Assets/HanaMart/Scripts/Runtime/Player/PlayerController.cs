@@ -20,6 +20,8 @@ namespace HanaMart.Player
         public InputActionAsset Input { get; private set; }
         public event Action<StepResult> Stepped;
         public bool GameplayEnabled { get; set; } = true;
+        public bool ExternalView { get; set; }
+        public float CurrentFov => 72f * (1f - Motor.zoom * .4f);
         public float roll;
         Camera view;
         NavMeshDataInstance navMeshInstance;
@@ -93,14 +95,14 @@ namespace HanaMart.Player
                 };
             }
             StepResult result = Motor.Update(Mathf.Min(Time.deltaTime, .1f), state, settings, Area, roll);
-            ApplyPose();
+            if (!ExternalView) ApplyPose();
             if (result.stepped) Stepped?.Invoke(result);
         }
         public void ApplyPose()
         {
             var pose = Motor.Pose;
             transform.SetPositionAndRotation(ThreeCoords.ToUnity(pose.threePos), ThreeCoords.CameraRotation(pose.pitch, pose.yaw, pose.roll));
-            view.fieldOfView = 72f * (1f - Motor.zoom * .4f);
+            view.fieldOfView = CurrentFov;
         }
     }
 }

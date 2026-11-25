@@ -2,10 +2,12 @@
 
 Nguồn chính là `deaths.js`, cùng `game.js:cinematic, updateCinematic, apparition` và hậu kỳ trong `main.js`. Khởi động từ sự kiện thua do Kế hoạch 4 phát ra. Giữ hệ tọa độ Three.js trong dữ liệu.
 
-## Task 1 — Điều phối và camera
+## Task 1 — Điều phối và camera (xong)
 
 - Viết test RED cho chọn cảnh theo `SCENE_OF`, bộ đếm biến thể, thời điểm bỏ qua sau 1.4 giây, bước thời gian tối đa .05 giây, kết thúc và dọn tài nguyên khi retry hoặc đổi scene.
 - Port điều khiển vị trí/hướng camera, nội suy mũ, fade/glitch/warp/đỏ/dolly, rung và khóa input. Phục hồi đèn, camera, hàng tạm ẩn và tham số phim khi kết thúc. Chạy test GREEN và smoke trước commit.
+
+215/215 EditMode đạt, smoke `Run Death Camera` kiểm chuyển góc camera, skip và retry trong Play. Các sequence chuyên biệt nối ở Task 2–3.
 
 ## Task 2 — Cảnh với khách và người giả
 

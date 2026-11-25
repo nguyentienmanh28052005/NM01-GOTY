@@ -86,7 +86,12 @@ Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ b
 - **Task 4 XONG**: `NightRules`, `RedHour`, `ShiftGame.Night` và `StoryGuests` nối giao 12/13 thùng, tiếng gọi trong hẻm, tủ đông/Ji-ho, quản lý và Mi-rae giả, nhân viên giả, đập kính/giao bù, mất điện, nhìn người ngoài kính, đèn đuổi, Giờ Đỏ, luật giả và bàn giao 06:00. Hai kết thúc A/B mang lời thoại, điều kiện và thống kê bản gốc. Cảnh thua và hiệu ứng camera ở Kế hoạch 5, giao diện lưu kết thúc ở Kế hoạch 6.
 - RED 10/15 (`46121423cf4d49aab5a4453d0bc8f386`) → **186/186 EditMode GREEN** (`9ee63d89295b477592674916b527192c`). MCP `Run Story Milestones` mở tủ đông 02:00 chết theo luật 6 và retry phục hồi input; chạy toàn bộ 6 chu kỳ Giờ Đỏ đứng yên; mở cả kết thúc A và B bằng Mi-rae tới quầy thật ở 06:00. Kết thúc B kiểm với 5 trang đã nạp để tập trung vào nhánh cứu Ji-ho. Log rỗng, đây là các lượt theo mốc.
 - **Task 5 XONG**: 3 seed kiểm clock 00:00→06:00, đủ 29 mốc cốt truyện theo thứ tự, checkpoint 01:00–05:00 đúng một lần. MCP `Run Player Store Route` qua PlayerMotor và ray E thật: cửa trước chặn nhân viên ở z=7.67, cửa sau đóng chặn z=−4.237; mở bằng tương tác, đi tới hẻm (2.148, −6.980). Log rỗng. **190/190 EditMode GREEN** (`bd4385cfaa2c4fc68a6e89b16f106943`), hai scene người dùng không diff.
-- **Tiếp theo Kế hoạch 5**: điều phối sequence/camera, các cảnh thua và điện ảnh. Chưa chạy ca tương tác liên tục hoặc nghiệm thu hình ảnh cuối.
+
+### Kế hoạch 5 — Cảnh thua và điện ảnh (đang làm)
+
+- **Task 1 XONG**: `DeathCuts` giữ bảng `SCENE_OF`, variant theo loại cảnh, bước .05 s, bỏ qua sau 1.4 s, giới hạn 20 s. `ShiftGame.Death` runner chuỗi lồng nhau, camera easing, Film, FOV, cảnh thua dự phòng, dọn Actor/đạo cụ/đèn khi retry. `PlayerController.ExternalView` để camera cảnh thua sở hữu trọn khung hình cho tới khi phục hồi. Cảnh riêng theo từng loại ở Task 2–3.
+- RED 23/24 (`2ba6400e326343a38f96cfcca61d8ada`) và RED recap khi sequence kết thúc sớm (`bdaf3067cd5c4abf80d883d1d37649c9`) → **215/215 EditMode GREEN** (`5420511b90e341debcd767c7ad28f80a`). MCP `Run Death Camera` đo xoay tới 112°, skip mở recap, retry dọn Actor và phục hồi Film/input; log Play rỗng. `Run Story Milestones` đã chờ recap mới retry.
+- **Tiếp theo Task 2**: bốn cảnh với khách và người giả (`counter`, `childMom`, `storage`, `mirae`). Chưa chạy ca tương tác liên tục hoặc nghiệm thu hình ảnh cuối.
 
 ## 6. Việc còn lại sau đó (kế hoạch 3–7, viết chi tiết khi bắt đầu)
 3. Nhân vật `Actor` (mặt nạ quần áo + nhuộm, áo mưa vỏ phồng, trẻ em 0.68, biến hình xương + material reveal, NavMesh, clip `Female Walk` retarget, đứng/thở thủ tục).
