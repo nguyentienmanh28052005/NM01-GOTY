@@ -13,6 +13,7 @@ namespace HanaMart.Store
             public string threeType;
             public string displayName;
             public GameObject[] prefabs;
+            public Color[] colors;
         }
         public Entry[] entries = Array.Empty<Entry>();
 

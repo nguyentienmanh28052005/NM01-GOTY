@@ -229,22 +229,113 @@ namespace HanaMart.EditorTools
             }
         }
 
-        /// Thay hình học hàng hóa Three.js bằng prefab asset siêu thị (giữ thuốc lá), co vừa ô (w,h,d) của bản gốc.
+        /// Thay hình học hàng hóa Three.js bằng prefab asset siêu thị (giữ thuốc lá),
+        /// phân nhóm theo biển treo từng dãy kệ, quay mặt ra lối đi và sắp xếp màu theo ProductPlanogram.
         static void ReplaceProducts(GameObject root)
         {
             var cat = AssetDatabase.LoadAssetAtPath<ProductCatalog>(ProductExtractor.CatalogPath);
             if (cat == null) return;
-            int i = 0;
-            foreach (var m in root.GetComponentsInChildren<StoreMarker>(true).Where(x => x.kind == StoreMarker.Kind.Product))
+
+            var markers = root.GetComponentsInChildren<StoreMarker>(true)
+                .Where(x => x.kind == StoreMarker.Kind.Product)
+                .ToList();
+
+            var items = new List<(StoreMarker marker, JObject ex, string type, Vector3 facing, ProductPlanogram.BlockSlot slot)>(markers.Count);
+
+            foreach (var m in markers)
             {
-                var ex = JObject.Parse(m.json); string type = (string)ex["type"];
-                var e = cat.Find(type); if (e == null || e.prefabs.Length == 0) continue;
-                var prefab = e.prefabs[(i++ * 7 + (int)ex["variant"]) % e.prefabs.Length];
-                Object.DestroyImmediate(m.GetComponent<MeshRenderer>()); Object.DestroyImmediate(m.GetComponent<MeshFilter>());
-                var inst = (GameObject)PrefabUtility.InstantiatePrefab(prefab, m.transform);
-                var size = ProductExtractor.PrefabSize(prefab);
-                float s = Mathf.Min((float)ex["w"] / size.x, (float)ex["h"] / size.y, (float)ex["d"] / size.z) * 0.98f;
-                inst.transform.localPosition = Vector3.zero; inst.transform.localRotation = Quaternion.identity; inst.transform.localScale = Vector3.one * s;
+                var ex = JObject.Parse(m.json);
+                string origType = (string)ex["type"];
+                Vector3 tp = ThreeCoords.ToUnity(m.transform.position);
+                var (zoneId, facing, effType) = ClassifyShelfSlot(tp, origType, cat);
+                int row = Mathf.RoundToInt(tp.y / 0.36f);
+                int col = zoneId == 6 ? Mathf.RoundToInt(tp.x / 0.35f) : Mathf.RoundToInt(tp.z / 0.35f);
+                items.Add((m, ex, effType, facing, new ProductPlanogram.BlockSlot { zone = zoneId, row = row, col = col }));
+            }
+
+            foreach (var grp in items.GroupBy(it => (it.slot.zone, it.type)))
+            {
+                var list = grp.ToList();
+                var e = cat.Find(grp.Key.type);
+                if (e == null || e.prefabs == null || e.prefabs.Length == 0) continue;
+
+                Color[] palette = (e.colors != null && e.colors.Length == e.prefabs.Length)
+                    ? e.colors
+                    : Enumerable.Range(0, e.prefabs.Length).Select(k => Color.HSVToRGB((float)k / e.prefabs.Length, 0.7f, 0.9f)).ToArray();
+
+                var slots = list.Select(it => it.slot).ToArray();
+                int[] skuIndices = ProductPlanogram.AssignColorBlocks(slots, palette, grp.Key.zone * 17 + grp.Key.type.GetHashCode());
+
+                for (int idx = 0; idx < list.Count; idx++)
+                {
+                    var it = list[idx];
+                    var prefab = e.prefabs[skuIndices[idx] % e.prefabs.Length];
+                    Object.DestroyImmediate(it.marker.GetComponent<MeshRenderer>());
+                    Object.DestroyImmediate(it.marker.GetComponent<MeshFilter>());
+
+                    var inst = (GameObject)PrefabUtility.InstantiatePrefab(prefab, it.marker.transform);
+                    inst.transform.localPosition = Vector3.zero;
+                    inst.transform.rotation = Quaternion.LookRotation(it.facing, Vector3.up);
+
+                    var size = ProductExtractor.PrefabSize(prefab);
+                    bool rotated90 = Mathf.Abs(Vector3.Dot(inst.transform.localRotation * Vector3.forward, Vector3.right)) > 0.7f;
+                    float fitW = (float)it.ex[rotated90 ? "d" : "w"];
+                    float fitH = (float)it.ex["h"];
+                    float fitD = (float)it.ex[rotated90 ? "w" : "d"];
+                    float s = Mathf.Min(fitW / Mathf.Max(size.x, 1e-4f), fitH / Mathf.Max(size.y, 1e-4f), fitD / Mathf.Max(size.z, 1e-4f)) * 0.94f;
+                    inst.transform.localScale = Vector3.one * s;
+                }
+            }
+        }
+
+        static (int zoneId, Vector3 facing, string effectiveType) ClassifyShelfSlot(Vector3 tp, string origType, ProductCatalog cat)
+        {
+            string PickIfExists(string preferred, string fallback) =>
+                cat.Find(preferred) != null ? preferred : fallback;
+
+            // Tủ lạnh phía sau (z < 1.0)
+            if (tp.z < 1.0f)
+                return (6, Vector3.forward, origType);
+
+            // Tủ mở bên phải (x > 11.0)
+            if (tp.x > 11.0f)
+                return (7, Vector3.right, origType);
+
+            int bay = Mathf.Clamp(Mathf.FloorToInt((tp.z - 1.6f) / 0.85f), 0, 5);
+
+            // Dãy 1 (x = 4.6): MÌ & ĐỒ ĂN NHANH
+            if (tp.x < 5.9f)
+            {
+                bool left = tp.x < 4.6f;
+                Vector3 facing = left ? Vector3.right : Vector3.left;
+                if (left)
+                    return (0, facing, origType); // Giữ nguyên shelfRamen restock slot
+                string[] rightTypes = { "chips", "candy", "banana", "ramenCup" };
+                return (1, facing, PickIfExists(rightTypes[bay % rightTypes.Length], origType));
+            }
+
+            // Dãy 2 (x = 7.2): BÁNH KẸO
+            if (tp.x < 8.5f)
+            {
+                bool left = tp.x < 7.2f;
+                Vector3 facing = left ? Vector3.right : Vector3.left;
+                string[] aisle2Types = left
+                    ? new[] { "candy", "chips", "banana", "coffee" }
+                    : new[] { "chips", "banana", "candy", "coffee" };
+                return (left ? 2 : 3, facing, PickIfExists(aisle2Types[bay % aisle2Types.Length], origType));
+            }
+
+            // Dãy 3 (x = 9.8): ĐỒ DÙNG · ĐỒ UỐNG
+            {
+                bool left = tp.x < 9.8f;
+                Vector3 facing = left ? Vector3.right : Vector3.left;
+                // Giữ nguyên slot restock shelfMilk (z trong [3.2, 4.2]) ở mặt trái
+                if (left && tp.z >= 3.2f && tp.z <= 4.2f)
+                    return (4, facing, origType);
+                string[] aisle3Types = left
+                    ? new[] { "household", "bottle", "coffee", "household2" }
+                    : new[] { "household2", "soju", "household", "bottle" };
+                return (left ? 4 : 5, facing, PickIfExists(aisle3Types[bay % aisle3Types.Length], origType));
             }
         }
 
