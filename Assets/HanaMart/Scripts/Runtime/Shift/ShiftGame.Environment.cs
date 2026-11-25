@@ -196,6 +196,7 @@ namespace HanaMart.Shift
                     PhoneLed(0x40ff60);
                     Later(1.2f, () => { if (!phone.Ringing) PhoneLed(0x103010); });
                     Say("(Điện thoại bàn reo đúng MỘT tiếng rồi im bặt.)", 3);
+                    Cinematics.Pulse = .4f;
                     break;
                 case "lightDie": Flicker(true); break;
                 case "flicker": Flicker(false); break;

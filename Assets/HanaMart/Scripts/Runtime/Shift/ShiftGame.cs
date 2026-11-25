@@ -76,6 +76,7 @@ namespace HanaMart.Shift
             Run.CheckpointSaved += (hour, reduced) => Say(reduced ? "Một giờ không vi phạm — bớt 1 cảnh cáo" :
                 $"Đã lưu · {ShiftClock.Format(hour * 60)}", 3);
             InitializeJobs();
+            InitializeCinematics();
             NewShift();
         }
 
@@ -86,6 +87,7 @@ namespace HanaMart.Shift
         {
             StopAllCoroutines();
             StopDeath();
+            ResetCinematics();
             ClearGuests();
             if (retry) Run.Retry();
             else { Run.NewShift(); TotalSold = 0; }
@@ -112,7 +114,7 @@ namespace HanaMart.Shift
             ReadDialogInput();
             ReadPaperInput();
             if (Dead || Ended) return;
-            float dt = Time.deltaTime;
+            float dt = Time.deltaTime * Cinematics.Slowmo;
             Run.Tick(dt, dialogOpen: Dialogue != null, paperOpen: PaperTitle != null);
             double minute = Run.Clock.Minutes;
             var next = Run.Timeline.NextAnchor(minute, .5, 60);
@@ -120,6 +122,7 @@ namespace HanaMart.Shift
                 HasFlag("red") || HasFlag("blackout"), phone.Ringing, Run.Progress);
             if (kind != null) SpawnVisit(kind);
             UpdateJobs(dt);
+            if (Dialogue == null && PaperTitle == null) UpdateApparitions(dt);
             UpdateFrontDoor(dt, greetInput?.WasPressedThisFrame() == true);
         }
 
@@ -233,6 +236,7 @@ namespace HanaMart.Shift
                 interactor.Holding -= Hold;
             }
             StopDeath();
+            ReleaseCinematics();
             ClearGuests();
             ReleaseCheckoutMaterials();
             ReleaseEnvironment();

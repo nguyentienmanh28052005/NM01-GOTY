@@ -228,6 +228,8 @@ namespace HanaMart.Shift
             Run.Progress.Flags["blackout"] = 1;
             Run.Progress.Flags.Remove("blackEntry");
             blackoutTime = glassLook = 0;
+            TriggerCinematic(1.4f, zoom: .1f, slow: .5f, sting: false);
+            Cinematics.AddShake(.4f);
             Power(false, true);
             PlayClip("power_down");
             Say("(Mất điện!)", 2);
@@ -379,6 +381,7 @@ namespace HanaMart.Shift
             TintStore(0xff2416, .35f);
             PlayClip("sting");
             PlayClip("printer");
+            TriggerCinematic(3f, zoom: .15f, slow: .6f, sting: false);
             Say("05:15 · GIỜ ĐỎ");
             Later(1.8f, () =>
             {

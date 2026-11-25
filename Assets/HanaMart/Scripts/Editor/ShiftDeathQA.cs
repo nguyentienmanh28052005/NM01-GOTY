@@ -42,6 +42,68 @@ namespace HanaMart.EditorTools
             camera.GetComponent<PlayerController>().StartCoroutine(CheckObjectCuts(camera));
         }
 
+        [MenuItem("HanaMart/QA/Run Shift Cinematics")]
+        public static void ShiftCinematicsQA()
+        {
+            if (!Application.isPlaying) throw new InvalidOperationException("Shift cinematics QA runs in Play mode.");
+            Application.runInBackground = true;
+            var camera = Camera.main;
+            camera.GetComponent<PlayerController>().StartCoroutine(CheckShiftCinematics(camera));
+        }
+
+        static IEnumerator CheckShiftCinematics(Camera view)
+        {
+            const string output = "Logs/HanaMart/shift-cinematics.json";
+            Directory.CreateDirectory(Path.GetDirectoryName(output));
+            File.Delete(output);
+            var game = view.GetComponent<ShiftGame>();
+            var player = view.GetComponent<PlayerController>();
+
+            game.NewShift();
+            yield return null;
+            yield return null;
+
+            game.TriggerCinematic(1.2f);
+            yield return null;
+            if (!game.Cinematics.Active || game.Cinematics.Slowmo >= 1f || game.Cinematics.Dolly >= 0f || !game.Letterbox)
+                throw new InvalidOperationException("Mid-shift cinematic did not activate slowmo, dolly, and letterbox.");
+
+            game.ShowPaper("KIỂM TRA", "Giấy thử nghiệm giữa đoạn điện ảnh.");
+            yield return null;
+            game.ClosePaper();
+            game.ShowDialog("KIỂM TRA", "Hộp thoại giữa đoạn điện ảnh.", new ShiftGame.Choice("Tiếp tục", null));
+            yield return null;
+            game.SelectOption(0);
+
+            double started = Time.realtimeSinceStartupAsDouble;
+            double deadline = started + 2.0;
+            for (int frame = 0; frame < 1000 && game.Cinematics.Active && Time.realtimeSinceStartupAsDouble < deadline; ++frame)
+                yield return null;
+            if (game.Cinematics.Active || Mathf.Abs(game.Cinematics.Slowmo - 1f) > .001f || Mathf.Abs(game.Cinematics.Dolly) > .001f ||
+                game.Letterbox || !player.GameplayEnabled)
+                throw new InvalidOperationException("Mid-shift cinematic did not finish cleanly or stalled player input.");
+
+            if (!game.SpawnApparition() || game.ActiveApparitions != 1)
+                throw new InvalidOperationException("Apparition did not spawn in peripheral view.");
+            var ghost = GameObject.Find("Bóng rìa mắt")?.GetComponent<Actor>();
+            if (!ghost) throw new InvalidOperationException("Apparition actor missing.");
+            player.Motor.SetYawFacing(ghost.pos.x - player.Motor.pos.x, ghost.pos.z - player.Motor.pos.y);
+            player.Motor.Update(0, default, player.settings, player.Area);
+            player.ApplyPose();
+            yield return null;
+            yield return null;
+            if (game.ActiveApparitions != 0 || game.Cinematics.Pulse <= .2f || game.Cinematics.Shake <= .05f)
+                throw new InvalidOperationException("Looking at apparition did not dismiss it with pulse/shake spike.");
+
+            game.NewShift();
+            yield return null;
+            yield return null;
+            if (Mathf.Abs(game.Cinematics.Slowmo - 1f) > .001f || game.Letterbox || game.Cinematics.Pulse != 0f || !player.GameplayEnabled)
+                throw new InvalidOperationException("NewShift did not reset cinematics state.");
+
+            File.WriteAllText(output, "{\"passed\":true}");
+        }
+
         static IEnumerator CheckObjectCuts(Camera view)
         {
             var game = view.GetComponent<ShiftGame>();

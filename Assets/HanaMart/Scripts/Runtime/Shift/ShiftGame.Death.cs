@@ -73,6 +73,8 @@ namespace HanaMart.Shift
         {
             StopDeath();
             StopAllCoroutines();
+            Cinematics.Reset();
+            ClearApparitions();
             foreach (var guest in guests) guest.Actor.SetPath(null);
             var view = GetComponent<Camera>();
             var stage = new DeathStage
@@ -117,9 +119,10 @@ namespace HanaMart.Shift
 
         void LateUpdate()
         {
+            float dt = Mathf.Min(.05f, Time.unscaledDeltaTime);
+            UpdateCinematicsLate(dt);
             var stage = death;
             if (stage == null) return;
-            float dt = Mathf.Min(.05f, Time.unscaledDeltaTime);
             stage.Cut.Tick(dt);
             if (!stage.Shown && (confirmInput?.WasPressedThisFrame() == true || player.Input?.FindAction("Use")?.WasPressedThisFrame() == true ||
                 Mouse.current?.leftButton.wasPressedThisFrame == true)) SkipDeath();

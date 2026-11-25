@@ -23,7 +23,9 @@ Nguồn chính là `deaths.js`, cùng `game.js:cinematic, updateCinematic, appar
 
 220/220 EditMode (`e49104ecea974fe686eaf89ccf1525d9`). MCP chạy trọn 11 biến thể (`death-objects.json`), sửa bind đèn con, gỡ `BatchingStatic` cho cửa/nắp tủ đông/14 máng đèn trần, nối `HemisphereAmbient` + phát sáng máng đèn, fallback hành lang `DeathSpot`, và guard `Actor` khi thoát Play. Ảnh `docs/visual/deaths/object-scenes.jpg`.
 
-## Task 4 — Nhịp phim giữa ca
+## Task 4 — Nhịp phim giữa ca (xong)
 
 - Nối các đoạn điện ảnh như slow motion, dolly và nhịp tim khi xảy ra biến cố, bóng rìa mắt, gợi ý âm thanh và im ắng. Giữ giá trị về thời lượng và di chuyển từ source.
 - Test đoạn điện ảnh hết đúng hạn, giấy/đối thoại và kết thúc ca không kẹt input. Cập nhật sổ quyết định cùng kết quả Play.
+
+225/225 EditMode (`2aa177c9b6cf4e65b1645810f6ea5d33`), `CinematicTests` 5/5. MCP `Run Shift Cinematics`, `Run Story Milestones` (cả A/B), `Run Death Camera` đạt; `play-errors.log` và Console (sau Play stop) 0 lỗi/cảnh báo. Kế hoạch 5 hoàn tất; tiếp theo: Kế hoạch 6.

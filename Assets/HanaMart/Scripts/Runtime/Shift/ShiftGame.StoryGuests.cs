@@ -48,6 +48,8 @@ namespace HanaMart.Shift
                         {
                             Speak(guest, "Nội quy... Tốt. Rất... tốt.");
                             guest.Actor.Motion.revealTarget = 1;
+                            TriggerCinematic(3.2f, sting: false);
+                            Cinematics.AddShake(.3f);
                             PlayClip("sting");
                             Later(3.2f, () => { guest.Paid = true; guest.Actor.speed = .6f; director.Calm(35); });
                         }));
@@ -59,6 +61,7 @@ namespace HanaMart.Shift
                         {
                             Speak(guest, "...Vậy à. Tớ sẽ đợi.");
                             guest.Actor.Motion.revealTarget = 1;
+                            TriggerCinematic(2.6f, sting: false);
                             PlayClip("sting");
                             Later(2.8f, () => { guest.Paid = true; director.Calm(30); });
                         }));
@@ -71,6 +74,8 @@ namespace HanaMart.Shift
                             Speak(guest, "...Ừ. Sáu. Giờ.");
                             guest.Actor.Motion.revealTarget = 1;
                             guest.Actor.Motion.headSpin = .4f;
+                            TriggerCinematic(3.2f, sting: false);
+                            Cinematics.AddShake(.4f);
                             PlayClip("sting");
                             foreach (var light in lamps) light.FlickerUntil = Time.time + 3.5f;
                             Later(3.5f, () => { guest.Paid = true; guest.Actor.speed = .5f; });
@@ -105,6 +110,7 @@ namespace HanaMart.Shift
                     {
                         Speak(woman, "...");
                         woman.Actor.Motion.revealTarget = 1;
+                        TriggerCinematic(2.4f, sting: false);
                         PlayClip("sting");
                         Later(2.6f, () =>
                         {
@@ -141,6 +147,7 @@ namespace HanaMart.Shift
         {
             guest.Paid = true;
             Ended = true;
+            ResetCinematics();
             Run.Clock.Running = false;
             bool rescued = HasFlag("jiho");
             ShowDialog("Chị Mi-rae", rescued
