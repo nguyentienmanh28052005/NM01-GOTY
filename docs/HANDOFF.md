@@ -75,7 +75,7 @@ Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ b
   **Task 5 XONG**: test 60 s cho cả bốn Humanoid bắt một bước cắt ô góc và sót mesh tạm khi hủy trong EditMode. Sửa bằng kiểm từng cạnh ô khi làm mượt đường, đi tới đúng waypoint, giải phóng tài nguyên rõ ràng khi Remove ở EditMode. RED `83ad4efac6b14e4bb591e5324ba0d8ed` → **128/128 EditMode GREEN**, job `beca836aab4f4578aca1ea83dc01a30b`.
   MCP `HanaMart/QA/Run Actor Route` chạy Play 60.001 s, 5704 khung, khách áo mưa vàng đi 19.45 m tới (2.15, −7), không ô bị chặn nào và log 0 cảnh báo/lỗi. Bốn ảnh ở `docs/visual/characters/actor-route.jpg`. QA mở hai cửa trong Play, chưa có đạo diễn tự mở cửa cho khách. Hai scene được bảo vệ không có diff.
 
-### Kế hoạch 4 — Kịch bản ca đêm (đang làm)
+### Kế hoạch 4 — Kịch bản ca đêm (xong)
 
 - **Task 1 XONG**: `ShiftClock`, `ShiftTimeline`, `ShiftProgress`, `ShiftRun`. Đồng hồ 6/7/8 s mỗi phút, chặn ở 06:00, dừng khi đọc giấy/đối thoại, 04:44 giả chỉ đổi hiển thị. 29 mốc cốt truyện, lịch dị thường tối đa 4/6/8 theo đúng 300 lần thử mỗi phase. Đối chiếu bằng chạy `_buildEvents` của nguyên bản với hai seed, đạt đúng các mốc/phân bố.
 - Checkpoint lưu trước fax/phase/giao hàng/tủ đông, retry chạy lại mốc ngay đầu giờ, bỏ cờ tức thời và giữ Sổ tay/mức nới lỗi. Cảnh cáo giảm khi số cảnh cáo giữ nguyên trọn giờ. RED 7/7 (`f10a50125bfb470f81ddde32dd3e85ef`), test tích hợp checkpoint RED (`7ff8a078fd7249cca88d59267e13035b`) → **137/137 EditMode GREEN** (`4f3934f77b004d17a9f1eaef7fd5ae97`).
@@ -85,7 +85,8 @@ Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ b
 - RED 10/10 (`2109b89cb168410facfcb724f424e97e`) → **171/171 EditMode GREEN** (`0d2ca7c38fe6476d9fc5960bb65a3abf`). MCP `HanaMart/QA/Run Shift Jobs` dùng ray thật đọc luật/kiểm nhiệt/bê thùng/xếp đủ 18 món, lò đóng/mở và trả món nóng, retry 01:00 giữ stock, dọn đồ và đóng lò. QA checkout áo mưa chạy lại đạt; log Play rỗng. Giấy và HUD vẫn đang dùng giao diện tạm.
 - **Task 4 XONG**: `NightRules`, `RedHour`, `ShiftGame.Night` và `StoryGuests` nối giao 12/13 thùng, tiếng gọi trong hẻm, tủ đông/Ji-ho, quản lý và Mi-rae giả, nhân viên giả, đập kính/giao bù, mất điện, nhìn người ngoài kính, đèn đuổi, Giờ Đỏ, luật giả và bàn giao 06:00. Hai kết thúc A/B mang lời thoại, điều kiện và thống kê bản gốc. Cảnh thua và hiệu ứng camera ở Kế hoạch 5, giao diện lưu kết thúc ở Kế hoạch 6.
 - RED 10/15 (`46121423cf4d49aab5a4453d0bc8f386`) → **186/186 EditMode GREEN** (`9ee63d89295b477592674916b527192c`). MCP `Run Story Milestones` mở tủ đông 02:00 chết theo luật 6 và retry phục hồi input; chạy toàn bộ 6 chu kỳ Giờ Đỏ đứng yên; mở cả kết thúc A và B bằng Mi-rae tới quầy thật ở 06:00. Kết thúc B kiểm với 5 trang đã nạp để tập trung vào nhánh cứu Ji-ho. Log rỗng, đây là các lượt theo mốc.
-- **Tiếp theo Task 5**: kiểm tích hợp đường người chơi và trình tự lịch, chuẩn bị Kế hoạch 5. Chưa chạy ca liên tục hoặc nghiệm thu hình ảnh cuối.
+- **Task 5 XONG**: 3 seed kiểm clock 00:00→06:00, đủ 29 mốc cốt truyện theo thứ tự, checkpoint 01:00–05:00 đúng một lần. MCP `Run Player Store Route` qua PlayerMotor và ray E thật: cửa trước chặn nhân viên ở z=7.67, cửa sau đóng chặn z=−4.237; mở bằng tương tác, đi tới hẻm (2.148, −6.980). Log rỗng. **190/190 EditMode GREEN** (`bd4385cfaa2c4fc68a6e89b16f106943`), hai scene người dùng không diff.
+- **Tiếp theo Kế hoạch 5**: điều phối sequence/camera, các cảnh thua và điện ảnh. Chưa chạy ca tương tác liên tục hoặc nghiệm thu hình ảnh cuối.
 
 ## 6. Việc còn lại sau đó (kế hoạch 3–7, viết chi tiết khi bắt đầu)
 3. Nhân vật `Actor` (mặt nạ quần áo + nhuộm, áo mưa vỏ phồng, trẻ em 0.68, biến hình xương + material reveal, NavMesh, clip `Female Walk` retarget, đứng/thở thủ tục).

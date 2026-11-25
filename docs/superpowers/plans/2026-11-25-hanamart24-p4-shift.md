@@ -38,7 +38,7 @@ Mỗi task bắt đầu bằng test có `[Timeout]` và vòng lặp hữu hạn.
 
 186/186 EditMode. MCP Play thử tử vong tủ đông/retry, Giờ Đỏ và 2 kết thúc ở các mốc riêng, log rỗng. Giữ giới hạn bản gốc 359.7 để khách ca sáng bước vào và 359.5 cho kiểm hội thoại.
 
-## Task 5 — Tích hợp scene và các mốc kiểm thử
+## Task 5 — Tích hợp scene và các mốc kiểm thử (xong)
 
 - Chạy các tuyến mốc deterministic qua cùng hệ thống điều khiển game. Log thời điểm các mốc, bẫy, checkpoint và kết thúc. Tách kết quả test logic khỏi kiểm tra hình ảnh/UI ở các kế hoạch sau.
-- Xác nhận có thể đi qua cửa, kho, hẻm và đến quầy bằng input bình thường. Kiểm scene cũ không có diff, Console sạch trong smoke Play, toàn assembly GREEN. Ghi những sai lệch có chứng cứ vào HANDOFF.
+- Xác nhận đường quầy→kho→cửa sau→hẻm qua PlayerMotor và ray mở cửa trong Play. Cửa trước vẫn chặn nhân viên đúng luật 1, NPC đi qua như đã kiểm Kế hoạch 3. Hai scene bảo vệ không có diff, log rỗng, 190/190 EditMode GREEN. Ca liên tục và so hình ở Kế hoạch 7.
