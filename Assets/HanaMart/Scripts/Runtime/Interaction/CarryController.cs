@@ -26,6 +26,7 @@ namespace HanaMart.Interaction
         public bool Busy { get; private set; }
         public event Action<string> Changed, PickedUp, Placed;
         PlayerController player;
+        Func<float, float, bool> walkableAt;
         Interactor interactor;
         Transform hand;
         GameObject held, ghost, ring, arms;
@@ -38,6 +39,7 @@ namespace HanaMart.Interaction
         void Start()
         {
             player = GetComponent<PlayerController>(); interactor = GetComponent<Interactor>();
+            walkableAt = player.Navigation.Walkable;
             foreach (var marker in FindObjectsByType<StoreMarker>(FindObjectsInactive.Include, FindObjectsSortMode.None))
                 if (!refs.ContainsKey(marker.key)) refs.Add(marker.key, marker);
             hand = new GameObject("Carried item").transform; hand.SetParent(transform, false); hand.localPosition = new Vector3(.32f,-.3f,.55f);
@@ -150,7 +152,7 @@ namespace HanaMart.Interaction
             if(ghost)
             {
                 placingTime+=dt; var camera=GetComponent<Camera>();
-                target=Placement.Target(new Ray(ThreeCoords.ToUnity(camera.transform.position),ThreeCoords.ToUnity(camera.transform.forward)),player.Motor.pos,player.Area);
+                target=Placement.Target(new Ray(ThreeCoords.ToUnity(camera.transform.position),ThreeCoords.ToUnity(camera.transform.forward)),player.Motor.pos,walkableAt);
                 ghost.transform.position=ThreeCoords.ToUnity(target+Vector3.up*HalfHeight(Kind));ghost.transform.rotation=Quaternion.Euler(0,-player.Motor.yaw*Mathf.Rad2Deg+(Kind=="mop"?-90:0),0);
                 ring.transform.position=ThreeCoords.ToUnity(target+Vector3.up*.006f);ring.transform.localScale=new Vector3(.48f,1,.48f)*(1+Mathf.Sin(placingTime*6)*.06f);
                 if(!drop.IsPressed())Drop(target);

@@ -31,12 +31,12 @@ Nguồn: `source/src/person.js`, `game.js` (Actor), `nav.js` trong bản Three.j
 - [x] Actor API cho Kế hoạch 4: pos Three, yaw, speed, lookTarget, revealTarget, headSpin, armUp, path, remove; quản lý material instance và tài nguyên khi despawn. Tạo đường từ đích bằng navigation ở Task 4.
 - [x] Play bốn avatar đi/đứng, child, biến hình; log sạch. Ảnh `docs/visual/characters/actor-motion.jpg`. Kiểm đế giày 32 mẫu. Commit + HANDOFF.
 
-## Task 4 — Navigation và mặt đỡ đặt đồ
+## Task 4 — Navigation và mặt đỡ đặt đồ (xong)
 
-- [ ] Test RED: đường ngoài phố→cửa trước→quầy; quầy→cửa kho→cửa sau; không cắt góc kệ; không qua kính/tường; đường không tồn tại trả trạng thái thất bại có giới hạn.
-- [ ] Bake NavMesh từ vùng sàn nối và collider, radius .24; bỏ hai collider cửa đúng game.js. Giữ các cổng như nav.js, source positions Three chỉ chuyển ở renderer.
-- [ ] Port walkableAt grid C=.15/R=.24/AREAS cho logic đặt đồ, nối Placement thay WalkArea người chơi. Mọi tìm kiếm có giới hạn (nguồn A* 60000 lượt, nearestFree 25 ô), không treo Editor.
-- [ ] Test placement cũ và cả assembly GREEN. Commit + HANDOFF.
+- [x] Test RED: đường ngoài phố→cửa trước→quầy; quầy→cửa kho→cửa sau; không cắt góc kệ; không qua kính/tường; đường không tồn tại trả trạng thái thất bại có giới hạn.
+- [x] Bake NavMesh từ các ô đã chừa radius .24 m, bỏ hai collider cửa theo game.js, cổng theo nav.js. Grid dùng tọa độ Three và là nguồn cho đường NPC.
+- [x] Port walkableAt grid C=.15/R=.24/AREAS cho logic đặt đồ, nối Placement thay WalkArea người chơi. Tìm kiếm giới hạn 60000 lượt, nearestFree 24 vòng ô theo nav.js.
+- [x] Test placement cũ và cả assembly GREEN 124/124 (`a44961fc891b4b6198260524a9b9ba2e`). Commit + HANDOFF.
 
 ## Task 5 — Kiểm tích hợp nhân vật
 

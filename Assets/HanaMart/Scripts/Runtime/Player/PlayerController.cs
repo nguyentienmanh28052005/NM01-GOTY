@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using HanaMart.Store;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.InputSystem;
 
 namespace HanaMart.Player
@@ -10,15 +11,18 @@ namespace HanaMart.Player
     public sealed class PlayerController : MonoBehaviour
     {
         public InputActionAsset controls;
+        public NavMeshData storeNavMesh;
         public List<Box2> collisionBoxes = new List<Box2>();
         public PlayerSettings settings = new PlayerSettings();
         public PlayerMotor Motor { get; } = new PlayerMotor();
         public WalkArea Area { get; private set; }
+        public StoreNavigation Navigation { get; private set; }
         public InputActionAsset Input { get; private set; }
         public event Action<StepResult> Stepped;
         public bool GameplayEnabled { get; set; } = true;
         public float roll;
         Camera view;
+        NavMeshDataInstance navMeshInstance;
         InputAction move, look, padLook, run, crouch, zoom;
         bool focused = true;
 
@@ -26,6 +30,7 @@ namespace HanaMart.Player
         {
             view = GetComponent<Camera>();
             Area = new WalkArea(collisionBoxes);
+            Navigation = new StoreNavigation(collisionBoxes);
             if (controls)
             {
                 Input = Instantiate(controls);
@@ -37,9 +42,15 @@ namespace HanaMart.Player
             ApplyPose();
         }
 
-        void OnEnable() { if (Input) Input.Enable(); LockCursor(true); }
+        void OnEnable()
+        {
+            if (storeNavMesh) navMeshInstance = NavMesh.AddNavMeshData(storeNavMesh);
+            if (Input) Input.Enable();
+            LockCursor(true);
+        }
         void OnDisable()
         {
+            if (navMeshInstance.valid) navMeshInstance.Remove();
             if (Input) Input.Disable();
             LockCursor(false);
             Gamepad.current?.ResetHaptics();

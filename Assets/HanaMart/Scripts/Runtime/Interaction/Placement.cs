@@ -1,3 +1,4 @@
+using System;
 using HanaMart.Player;
 using UnityEngine;
 
@@ -5,6 +6,8 @@ namespace HanaMart.Interaction
 {
     public static class Placement
     {
+        static readonly float[] SurfaceHeights = { 1.02f, .92f, 0 };
+
         public static float SurfaceAt(float x, float z)
         {
             if (x > 1.2f && x < 2 && z > 2.4f && z < 6.2f) return 1.02f;
@@ -12,24 +15,26 @@ namespace HanaMart.Interaction
             if (x > 7.35f && x < 11.9f && z > 7.35f && z < 7.85f) return 1.02f;
             return 0;
         }
-        public static Vector3 Target(Ray threeRay, Vector2 player, WalkArea area)
+        public static Vector3 Target(Ray threeRay, Vector2 player, WalkArea area) => Target(threeRay, player, area.Walkable);
+
+        public static Vector3 Target(Ray threeRay, Vector2 player, Func<float, float, bool> walkable)
         {
             var o = threeRay.origin; var d = threeRay.direction;
             float best = float.PositiveInfinity; Vector3 target = default;
-            foreach (float y in new[] { 1.02f, .92f, 0 })
+            foreach (float y in SurfaceHeights)
             {
                 if (d.y > -.05f) break;
                 float t = (y - o.y) / d.y;
                 if (t <= 0 || t > 2.6f) continue;
                 float x = o.x + d.x * t, z = o.z + d.z * t;
-                if (Mathf.Abs(SurfaceAt(x,z)-y) > .001f || (y == 0 && !area.Walkable(x,z))) continue;
+                if (Mathf.Abs(SurfaceAt(x,z)-y) > .001f || (y == 0 && !walkable(x,z))) continue;
                 if (t < best) { best = t; target = new Vector3(x,y,z); }
             }
             if (!float.IsPositiveInfinity(best)) return target;
             var forward = new Vector2(d.x,d.z).normalized;
             float range = 1.6f;
             // Bound the original while loop: at most 11 reductions to 0.5 m.
-            for (int step=0; step<11 && range>.5001f && !area.Walkable(player.x+forward.x*range,player.y+forward.y*range);step++) range-=.1f;
+            for (int step=0; step<11 && range>.5001f && !walkable(player.x+forward.x*range,player.y+forward.y*range);step++) range-=.1f;
             float px=player.x+forward.x*range, pz=player.y+forward.y*range;
             return new Vector3(px,SurfaceAt(px,pz),pz);
         }

@@ -81503,6 +81503,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: HanaMart.Runtime::HanaMart.Player.PlayerController
   controls: {fileID: -944628639613478452, guid: 0ba60dc9fe00ba4438265dc6384c6c16, type: 3}
+  storeNavMesh: {fileID: 23800000, guid: bad380174e9cd7447bb05010fb639979, type: 2}
   collisionBoxes:
   - x0: -0.3
     z0: -0.06

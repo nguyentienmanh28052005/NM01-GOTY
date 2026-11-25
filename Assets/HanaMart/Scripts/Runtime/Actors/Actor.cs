@@ -227,6 +227,13 @@ namespace HanaMart.Actors
             waypoint = 0;
         }
 
+        public bool TryMoveTo(StoreNavigation navigation, Vector2 destination)
+        {
+            bool reachable = navigation.TryPath(new Vector2(pos.x, pos.z), destination, out var route);
+            SetPath(route);
+            return reachable;
+        }
+
         public void Advance(float dt)
         {
             if (!alive || !Model) return;
