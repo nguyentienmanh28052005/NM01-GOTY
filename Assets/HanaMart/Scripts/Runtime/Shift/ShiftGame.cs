@@ -92,12 +92,7 @@ namespace HanaMart.Shift
             Run = new ShiftRun(random.NextDouble);
             director = new VisitDirector(random.NextDouble);
             Run.EventReached += OnStoryEvent;
-            Run.CheckpointSaved += (hour, reduced) =>
-            {
-                string msg = reduced ? "Một giờ không vi phạm — bớt 1 cảnh cáo" : $"Đã lưu · {ShiftClock.Format(hour * 60)}";
-                Say(msg, 3);
-                ToastRequested?.Invoke(msg);
-            };
+            Run.CheckpointSaved += OnCheckpointSaved;
             InitializeJobs();
             InitializeCinematics();
             if (StartIdle)
@@ -111,7 +106,26 @@ namespace HanaMart.Shift
             }
         }
 
+        void OnCheckpointSaved(int hour, bool reduced)
+        {
+            string msg = reduced ? "Một giờ không vi phạm — bớt 1 cảnh cáo" : $"Đã lưu · {ShiftClock.Format(hour * 60)}";
+            Say(msg, 3);
+            ToastRequested?.Invoke(msg);
+        }
+
         public void NewShift() => ResetShift(false);
+
+        public void NewShift(int seed)
+        {
+            random = new System.Random(seed);
+            Run = new ShiftRun(random.NextDouble);
+            director = new VisitDirector(random.NextDouble);
+            Run.EventReached += OnStoryEvent;
+            Run.CheckpointSaved += OnCheckpointSaved;
+            Tasks = new ShiftTasks(Run.Progress);
+            ResetShift(false);
+        }
+
         public void Retry() => ResetShift(true);
 
         public void ReturnToMenu()

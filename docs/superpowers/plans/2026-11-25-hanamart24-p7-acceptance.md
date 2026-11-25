@@ -2,10 +2,11 @@
 
 Chỉ đánh dấu hoàn tất khi có bằng chứng cho các mục nghiệm thu trong yêu cầu và design spec. Kết quả test logic trước đó không thay cho kiểm tra một ca thật qua Play mode.
 
-## Task 1 — Mô phỏng nhiều ca
+## Task 1 — Mô phỏng nhiều ca **(XONG)**
 
-- Dịch `sim.js` vào bộ chạy ca thử với các mức cẩn thận, trung bình và bất cẩn, cùng hằng số nhận biết, đọc thoại, tốc độ và ngẫu nhiên. Giới hạn tối đa thời gian/số bước, lưu seed và log sự kiện cho mỗi ca.
-- Chạy ca mô phỏng qua hành vi cùng bộ luật như gameplay, so phân phối chết/cảnh cáo/retry/ending với Three.js khi chạy được nguồn tham chiếu. Tái hiện mọi kẹt với đúng seed, thêm test RED trước khi sửa và chạy lại.
+- Đã port `sim.js` vào `Assets/HanaMart/Scripts/Runtime/Sim/{SimTypes,ShiftSimHost,SimBot}.cs` với đủ 3 mức (`careful` / `average` / `careless`), giữ nguyên hằng số nhận biết, đọc thoại, tốc độ, `SPOTS`, `DEATH2TRAP`, giới hạn bước/thời gian/retry, lưu seed và log sự kiện; bổ sung `ShiftGame.NewShift(int seed)` và menu Play QA `HanaMart/QA/Run Sim Batch` (`ShiftSimQA.cs`).
+- TDD: RED 5/5 fail (`32364cb074a34337b8ac2b464d4bb67d`, `p7-t1-red.json`) → `SimBotTests` 5/5 PASS (`ea1fbb88d3bc4f82a9123119b60320a6`, `p7-t1-sim.json`) → toàn assembly **255/255 PASS** (`0309b5c02d824e1bbfa9c79ee2671935`, `p7-t1-full.json`, 15.47 s).
+- Play QA `Run Sim Batch` (`Logs/HanaMart/sim-report.json`): `careful` 5/5 tới 06:00 (0 kẹt, TB **13.0** chết [11..16], 90.5 phút; khớp Three.js v2.2 ~13), `average` 5/5 tới 06:00 (0 kẹt, TB **20.2** chết [18..24], 119.7 phút; khớp Three.js v2.2 ~19), `careless` 4/4 tới 06:00 (0 kẹt, TB 28.25 chết); `play-errors.log` và Console 0 lỗi.
 
 ## Task 2 — So hình và hiệu năng
 
