@@ -19,7 +19,7 @@ namespace HanaMart.Shift
                 "mirae" => new Profile("Chị Mi-rae?", new ActorOptions
                     { coat = "uniform", color = 0x00a98f, longHair = true, hair = 0x0e0b0b, face = "wide", uncanny = .35f }, -1, null, null),
                 _ => new Profile("Chị Mi-rae", new ActorOptions
-                    { coat = "uniform", color = 0x00a98f, mask = "white", longHair = true, hair = 0x3a2418 }, -1, null, null),
+                    { coat = "uniform", color = 0x00a98f, longHair = true, hair = 0x3a2418 }, -1, null, null),
             };
             if (kind == "mirae" && HasFlag("jiho")) Say("Ji-ho (thì thầm): Người sắp vào... không phải chị Mi-rae đâu.", 5);
             var guest = SpawnGuest(kind, role);

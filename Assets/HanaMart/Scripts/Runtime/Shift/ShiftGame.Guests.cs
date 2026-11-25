@@ -39,23 +39,23 @@ namespace HanaMart.Shift
         static readonly string[] OrdinaryKinds = { "office", "student", "nurse", "rider", "couple", "worker", "office2", "gamer" };
         static readonly Dictionary<string, Profile> Ordinary = new()
         {
-            ["office"] = new("Nhân viên văn phòng", new ActorOptions { color = 0x2b2d42, mask = "white", hair = 0x1a1414 },
+            ["office"] = new("Nhân viên văn phòng", new ActorOptions { color = 0x2b2d42, hair = 0x1a1414 },
                 0, "Hâm nóng cơm cuộn giúp tôi được không?", new[] { "kimbap", "banana" }, heat: true),
-            ["student"] = new("Sinh viên", new ActorOptions { coat = "hoodie", color = 0x6c757d, hood = true, hair = 0x2a1c14 },
+            ["student"] = new("Sinh viên", new ActorOptions { coat = "hoodie", color = 0x6c757d, hair = 0x2a1c14 },
                 0, "Ôn thi xuyên đêm... cho em mì ly với.", new[] { "ramenCup", "can" }, station: true),
             ["drunk"] = new("Chú say rượu", new ActorOptions { coat = "suit", color = 0x343a40, hair = 0x101010, skin = 0xe8a98a },
                 1, "Này... thằng nhóc ca đêm trước đâu rồi? Ji-ho ấy. Tuần trước còn thấy mà...", new[] { "soju", "soju", "chips" }, .85f),
-            ["nurse"] = new("Y tá vừa tan ca", new ActorOptions { color = 0xe9ecef, mask = "white", longHair = true, hair = 0x1a1210 },
+            ["nurse"] = new("Y tá vừa tan ca", new ActorOptions { color = 0xe9ecef, longHair = true, hair = 0x1a1210 },
                 2, "Đêm nay đường vắng quá... cẩn thận nhé.", new[] { "coffee", "kimbap" }),
-            ["rider"] = new("Shipper", new ActorOptions { color = 0x1d3557, cap = true, mask = "black" },
+            ["rider"] = new("Shipper", new ActorOptions { color = 0x1d3557, cap = true },
                 1, "Còn đơn cuối rồi về. Nghe nói chỗ này ca đêm hay có chuyện lạ hả?", new[] { "can", "can" }),
-            ["couple"] = new("Khách nữ", new ActorOptions { color = 0xffadad, mask = "white", longHair = true, hair = 0x3a2418 },
+            ["couple"] = new("Khách nữ", new ActorOptions { color = 0xffadad, longHair = true, hair = 0x3a2418 },
                 2, "Bánh mandu là chân ái. Mà sao bạn cứ nhìn ra cửa kính thế?", new[] { "banana", "banana", "chips" }),
-            ["worker"] = new("Công nhân ca sớm", new ActorOptions { color = 0x3a5a40, cap = true, mask = "white" },
+            ["worker"] = new("Công nhân ca sớm", new ActorOptions { color = 0x3a5a40, cap = true },
                 0, "Sắp sáng rồi. Ca đêm chịu khó ghê.", new[] { "kimbap", "kimbap", "coffee" }),
             ["office2"] = new("Nhân viên tăng ca", new ActorOptions { coat = "suit", color = 0x22333b, hair = 0x111111 },
                 2, "Hâm giúp tôi hộp cơm này với.", new[] { "lunch", "coffee" }, heat: true),
-            ["gamer"] = new("Khách đeo tai nghe", new ActorOptions { coat = "hoodie", color = 0x2d6a4f, mask = "black", hair = 0x101010 },
+            ["gamer"] = new("Khách đeo tai nghe", new ActorOptions { coat = "hoodie", color = 0x2d6a4f, hair = 0x101010 },
                 1, "PC bang bên kia hết mì rồi.", new[] { "chips", "can", "can" }),
         };
         static readonly Vector2 DoorIn = new(3.1f, 7);

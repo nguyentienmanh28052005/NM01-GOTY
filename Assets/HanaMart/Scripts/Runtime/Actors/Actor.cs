@@ -183,11 +183,6 @@ namespace HanaMart.Actors
                 foreach (var material in slot.rainMaterials)
                     if (material && material.HasProperty("_Raincoat")) shellMaterial ??= material;
             }
-            if (!head || !bodyMaterial) return;
-            if (Options.hood)
-                RegisterAccessory(ActorAccessories.Hood(head, transform.rotation, Options.Scale.x, shellMaterial ? shellMaterial : bodyMaterial));
-            if (!string.IsNullOrEmpty(Options.mask))
-                RegisterAccessory(ActorAccessories.Mask(head, transform.rotation, Options.Scale.x, bodyMaterial, Options.mask));
         }
 
         void RegisterAccessory(GameObject accessory)
