@@ -179,6 +179,36 @@ namespace HanaMart.Shift
             ShiftStarted?.Invoke();
         }
 
+        /// Nhảy nhanh tới mốc giờ bất kỳ trong ca đêm (dùng cho menu hack F4).
+        public void JumpToTime(double targetMinutes, string label = null)
+        {
+            if (Run == null || Idle) return;
+            StopAllCoroutines();
+            StopDeath();
+            ResetCinematics();
+            ClearGuests();
+            ClosePaper();
+            CloseDialog();
+            ResetHazards();
+            Power(true, true);
+            TintStore(0xffffff, 1);
+            Dead = Ended = false;
+            LastDeathRule = -1;
+            Ending = null;
+            Paused = false;
+
+            Run.JumpToMinutes(targetMinutes);
+            director.Reset(targetMinutes >= 120);
+            director.StartIn(targetMinutes >= 120 ? 6 : 8);
+            SetGameplay(true);
+
+            string timeStr = ShiftClock.Format(Run.Clock.Minutes);
+            string msg = string.IsNullOrEmpty(label) ? $"Nhảy tới {timeStr}" : $"Hack giờ: {label}";
+            Say(msg, 3.5f);
+            ToastRequested?.Invoke(msg);
+            BannerRequested?.Invoke(timeStr, string.IsNullOrEmpty(label) ? "Nhảy mốc giờ" : label);
+        }
+
         void Update()
         {
             if (Run == null || Idle || Paused) return;

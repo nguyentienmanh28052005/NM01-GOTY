@@ -73,5 +73,16 @@ namespace HanaMart.Shift
             foreach (var flag in savedFlags) Flags.Add(flag.Key, flag.Value);
             foreach (var transient in TransientFlags) Flags.Remove(transient);
         }
+
+        public void ClearTransientFlags()
+        {
+            foreach (var transient in TransientFlags) Flags.Remove(transient);
+            Flags.Remove("knock");
+            Flags.Remove("knock323");
+            Flags.Remove("fake12");
+            Flags.Remove("fake13");
+        }
+
+        public void SetSavedHour(int hour) => SavedHour = System.Math.Clamp(hour, 0, 5);
     }
 }

@@ -27,6 +27,14 @@ namespace HanaMart.Shift
             showFakeTime = false;
         }
 
+        public void SetMinutes(double minutes)
+        {
+            Minutes = Math.Clamp(minutes, 0, 360);
+            Running = true;
+            fakeRemaining = 0;
+            showFakeTime = false;
+        }
+
         public void FakeTime(double seconds) => fakeRemaining = seconds;
 
         public void Tick(double seconds, bool dialogOpen = false, bool paperOpen = false, double timeScale = 1)

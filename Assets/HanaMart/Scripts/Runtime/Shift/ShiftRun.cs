@@ -32,6 +32,15 @@ namespace HanaMart.Shift
             Timeline.SkipBefore(Clock.Minutes);
         }
 
+        public void JumpToMinutes(double targetMinutes)
+        {
+            Clock.SetMinutes(targetMinutes);
+            Progress.ClearTransientFlags();
+            Progress.SetSavedHour((int)Math.Floor(Clock.Minutes / 60.0));
+            Timeline = new ShiftTimeline(random);
+            Timeline.SkipBefore(Clock.Minutes);
+        }
+
         public void Tick(double seconds, bool dialogOpen = false, bool paperOpen = false, double timeScale = 1)
         {
             Clock.Tick(seconds, dialogOpen, paperOpen, timeScale);

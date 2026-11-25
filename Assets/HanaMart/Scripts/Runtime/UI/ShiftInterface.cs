@@ -125,6 +125,7 @@ namespace HanaMart.UI
 
             BuildUi();
             BuildHud();
+            BuildHackPanel();
             BuildSettingsScreen();
             ApplyAllSettings();
             SyncState();
@@ -260,6 +261,12 @@ namespace HanaMart.UI
             if (hideUiInput?.WasPressedThisFrame() == true && Flow.State == AppState.Play && Flow.Screen == UiScreen.None)
                 ToggleRecMode();
 
+            if (HackPanelOpen && (Flow.State != AppState.Play || Flow.Screen != UiScreen.None || game.InputBlocked))
+                ToggleHackPanel(false);
+            else if (Flow.State == AppState.Play && Flow.Screen == UiScreen.None && !game.InputBlocked &&
+                     Keyboard.current?.f4Key.wasPressedThisFrame == true)
+                ToggleHackPanel();
+
             if (Flow.State == AppState.Boot)
             {
                 if (bootPressText)
@@ -291,6 +298,9 @@ namespace HanaMart.UI
                     {
                         game.ClosePaper();
                     }
+                }
+                else if (HackPanelOpen && HandleHackInput())
+                {
                 }
                 else if (pauseInput?.WasPressedThisFrame() == true && !game.InputBlocked && !game.ClosedOverlayThisFrame)
                 {
