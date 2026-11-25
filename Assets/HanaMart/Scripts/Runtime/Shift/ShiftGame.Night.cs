@@ -36,11 +36,16 @@ namespace HanaMart.Shift
             {
                 case "phase2":
                     Say("02:00 · Có gì đó trong cửa hàng đã thay đổi");
+                    BannerRequested?.Invoke("02:00", "Có gì đó trong cửa hàng đã thay đổi");
                     PlayClip("sting");
                     Run.Progress.Flags["knock"] = 1;
                     knockTime = 2;
                     break;
-                case "phase3": Say("04:00 · Trời sắp sáng. Cửa hàng không muốn bạn đi"); PlayClip("sting"); break;
+                case "phase3":
+                    Say("04:00 · Trời sắp sáng. Cửa hàng không muốn bạn đi");
+                    BannerRequested?.Invoke("04:00", "Trời sắp sáng. Cửa hàng không muốn bạn đi");
+                    PlayClip("sting");
+                    break;
                 case "freezerJiho":
                     if (NightRules.CanRescueJiho(Run.Progress.Diaries.Count, Run.Clock.Minutes, HasFlag("jiho")))
                     {
@@ -383,6 +388,7 @@ namespace HanaMart.Shift
             PlayClip("printer");
             TriggerCinematic(3f, zoom: .15f, slow: .6f, sting: false);
             Say("05:15 · GIỜ ĐỎ");
+            BannerRequested?.Invoke("05:15", "GIỜ ĐỎ");
             Later(1.8f, () =>
             {
                 if (!Dead) ShowPaper("HÓA ĐƠN #0000", "HANA MART 24\n------------------------------\nQUY TẮC BỔ SUNG x1 .......... ₩0\n------------------------------\n\n14. Trong GIỜ ĐỎ, khi đèn tắt: ĐỨNG YÊN. Đừng nhúc nhích cho tới khi đèn sáng lại.\n[DẤU ĐỎ HANA]");

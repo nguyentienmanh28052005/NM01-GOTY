@@ -1,5 +1,7 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using HanaMart.Interaction;
 using HanaMart.Player;
 using HanaMart.Shift;
 using HanaMart.Store;
@@ -14,24 +16,35 @@ namespace HanaMart.UI
 {
     [DefaultExecutionOrder(20)]
     [RequireComponent(typeof(ShiftGame), typeof(PlayerController))]
-    public sealed class ShiftInterface : MonoBehaviour
+    public sealed partial class ShiftInterface : MonoBehaviour
     {
         static readonly Color Teal = new(0f, 0.702f, 0.604f, 1f);
+        static readonly Color Cyan = new(0.49f, 1f, 0.882f, 1f);
         static readonly Color Red = new(0.843f, 0.149f, 0.184f, 1f);
         static readonly Color Muted = new(0.624f, 0.663f, 0.651f, 1f);
         static readonly Color Bright = new(0.933f, 0.941f, 0.925f, 1f);
         static readonly Color FooterText = new(0.451f, 0.502f, 0.490f, 1f);
+        static readonly Color PaperCream = new(0.953f, 0.937f, 0.894f, 0.985f);
+        static readonly Color PaperInk = new(0.086f, 0.094f, 0.102f, 1f);
 
         public Font sourceFont;
         public string SavePathOverride { get; set; }
         public UiFlow Flow { get; } = new();
         public SaveData Save { get; private set; }
+        public bool TaskPanelOpen { get; private set; }
+        public int DialogFocusIndex => dialogFocus.Index;
+        public string ActiveGuideTitle { get; private set; }
+        public bool HudVisible { get; private set; }
 
         ShiftGame game;
         PlayerController player;
+        Interactor interactor;
+        CarryController carry;
         Camera view;
 
-        InputAction navInput, confirmInput, backInput, pauseInput;
+        InputAction navInput, confirmInput, backInput, pauseInput, useInput;
+        readonly InputAction[] optionInputs = new InputAction[3];
+
         GameObject root;
         TMP_FontAsset font, hangulFallback;
         readonly Dictionary<UiScreen, GameObject> screens = new();
@@ -44,6 +57,7 @@ namespace HanaMart.UI
         bool wasPaused;
         int lastNavDir;
         float nextNavRepeatAt;
+        Coroutine tutorialCoroutine;
 
         sealed class MenuItemView
         {
@@ -64,8 +78,16 @@ namespace HanaMart.UI
         {
             game = GetComponent<ShiftGame>();
             player = GetComponent<PlayerController>();
+            interactor = GetComponent<Interactor>();
+            carry = GetComponent<CarryController>();
             view = GetComponent<Camera>();
+
+            if (TryGetComponent<ShiftHud>(out var oldHud)) oldHud.enabled = false;
+            if (TryGetComponent<InteractionPrompt>(out var oldPrompt)) oldPrompt.enabled = false;
+
             game.StartIdle = true;
+            game.ExternalDialogInput = true;
+            game.ExternalTasksPanel = true;
             player.AutoManageCursor = false;
             Save = SaveStore.Load(SavePathOverride);
         }
@@ -74,6 +96,11 @@ namespace HanaMart.UI
         {
             game.ShiftStarted += OnShiftStarted;
             game.EndingReached += OnEndingReached;
+            game.ToastRequested += ShowToast;
+            game.BannerRequested += ShowBanner;
+            game.WarnRequested += ShowWarn;
+            game.TasksPanelToggled += () => ToggleTaskPanel();
+            game.DeathRecapShown += ShowDeathRecap;
 
             if (player.Input)
             {
@@ -86,9 +113,13 @@ namespace HanaMart.UI
                     backInput = uiMap.FindAction("UiBack", false);
                 }
                 pauseInput = player.Input.FindAction("Pause", false);
+                useInput = player.Input.FindAction("Use", false);
+                for (int i = 0; i < optionInputs.Length; i++)
+                    optionInputs[i] = player.Input.FindAction("Option" + (i + 1), false);
             }
 
             BuildUi();
+            BuildHud();
             SyncState();
         }
 
@@ -108,14 +139,42 @@ namespace HanaMart.UI
             }
         }
 
+        public void ToggleTaskPanel(bool? force = null)
+        {
+            if (game.Idle || game.Dead || game.Ended) return;
+            TaskPanelOpen = force ?? !TaskPanelOpen;
+            if (taskPanelGo) taskPanelGo.SetActive(TaskPanelOpen);
+        }
+
+        public void ShowTutorial()
+        {
+            if (game.Idle || game.Dead || game.Ended) return;
+            game.ShowPaper("CA ĐÊM ĐẦU TIÊN",
+                "Bạn là nhân viên ca đêm. Làm việc vặt, phục vụ khách — và <b>tuân thủ tuyệt đối nội quy dán sau quầy</b>.\n\n" +
+                "<b>E</b> tương tác · <b>Q</b> đặt đồ xuống · <b>G</b> chào khách · <b>C</b> ngồi thấp · <b>R</b> nội quy · <b>Tab</b> sổ việc\n\n" +
+                "<color=#666666>Không ai chỉ đường cho bạn. Nghe, nhìn, và tự quyết định.\n(Cần gợi ý: Cài đặt → Điều khiển → Gợi ý nhiệm vụ.)</color>");
+        }
+
         public void ExecuteAction(UiAction action)
         {
+            if (tutorialCoroutine != null && (action == UiAction.ToMenu || action == UiAction.Retry || action == UiAction.Start))
+            {
+                StopCoroutine(tutorialCoroutine);
+                tutorialCoroutine = null;
+            }
+
             switch (action)
             {
                 case UiAction.Start:
                     Flow.Execute(UiAction.Start);
                     SyncState();
                     game.NewShift();
+                    if (Save != null && !Save.TutSeen)
+                    {
+                        Save.TutSeen = true;
+                        SaveStore.Save(Save, SavePathOverride);
+                        tutorialCoroutine = StartCoroutine(ShowTutorialDelayed());
+                    }
                     break;
                 case UiAction.Resume:
                     Flow.Execute(UiAction.Resume);
@@ -135,6 +194,8 @@ namespace HanaMart.UI
                 case UiAction.ToMenu:
                     Flow.Execute(UiAction.ToMenu);
                     attractTime = 0f;
+                    TaskPanelOpen = false;
+                    toastT = bannerT = warnT = flashT = 0f;
                     game.ReturnToMenu();
                     SyncState();
                     break;
@@ -148,9 +209,22 @@ namespace HanaMart.UI
             }
         }
 
+        IEnumerator ShowTutorialDelayed()
+        {
+            yield return new WaitForSeconds(2.6f);
+            tutorialCoroutine = null;
+            if (Flow.State == AppState.Play && Flow.Screen == UiScreen.None && !game.Idle && !game.Dead && !game.Ended &&
+                game.Dialogue == null && game.PaperTitle == null)
+            {
+                ShowTutorial();
+            }
+        }
+
         void OnShiftStarted()
         {
-            if (Flow.State != AppState.Play)
+            TaskPanelOpen = false;
+            if (taskPanelGo) taskPanelGo.SetActive(false);
+            if (Flow.State != AppState.Play || Flow.Screen == UiScreen.Death || Flow.Screen == UiScreen.Ending)
             {
                 Flow.EnterPlay();
                 SyncState();
@@ -162,6 +236,7 @@ namespace HanaMart.UI
             if (Save.RecordEnding(endingId))
                 SaveStore.Save(Save, SavePathOverride);
             RefreshEndingsText();
+            ShowEndingScreen(endingId == "B");
         }
 
         void Update()
@@ -187,7 +262,19 @@ namespace HanaMart.UI
             }
             else if (Flow.State == AppState.Play)
             {
-                if (pauseInput?.WasPressedThisFrame() == true && !game.InputBlocked && !game.ClosedOverlayThisFrame)
+                if (game.Dialogue != null)
+                {
+                    HandleDialogInput();
+                }
+                else if (game.PaperTitle != null)
+                {
+                    if (useInput?.WasPressedThisFrame() == true || confirmInput?.WasPressedThisFrame() == true ||
+                        backInput?.WasPressedThisFrame() == true)
+                    {
+                        game.ClosePaper();
+                    }
+                }
+                else if (pauseInput?.WasPressedThisFrame() == true && !game.InputBlocked && !game.ClosedOverlayThisFrame)
                 {
                     if (Flow.TryPause(false))
                     {
@@ -211,6 +298,48 @@ namespace HanaMart.UI
                 if (shouldLock != (Cursor.lockState == CursorLockMode.Locked))
                     player.LockCursor(shouldLock);
             }
+
+            UpdateHud(Time.unscaledDeltaTime);
+        }
+
+        void HandleDialogInput()
+        {
+            int count = game.Options != null ? game.Options.Length : 0;
+            if (count <= 0) return;
+
+            if (lastDialogRef != game.Dialogue || lastDialogCount != count)
+            {
+                lastDialogRef = game.Dialogue;
+                lastDialogCount = count;
+                dialogFocus.Reset(count);
+                UpdateDialogFocusVisuals();
+            }
+
+            int dir = ReadNavStep();
+            if (dir != 0)
+            {
+                dialogFocus.Move(dir, count);
+                game.PlayClip("ui_move");
+                UpdateDialogFocusVisuals();
+            }
+
+            for (int i = 0; i < optionInputs.Length; i++)
+            {
+                if (i < count && optionInputs[i]?.WasPressedThisFrame() == true)
+                {
+                    PickDialogOption(i);
+                    return;
+                }
+            }
+
+            if (confirmInput?.WasPressedThisFrame() == true)
+                PickDialogOption(Mathf.Clamp(dialogFocus.Index, 0, count - 1));
+        }
+
+        void PickDialogOption(int index)
+        {
+            game.PlayClip("ui_ok");
+            game.SelectOption(index);
         }
 
         void HandleMenuInput()
@@ -351,6 +480,8 @@ namespace HanaMart.UI
             bool allowWorld = Flow.GameplayAllowed(game.InputBlocked);
             player.GameplayEnabled = allowWorld;
             player.Motor.frozen = !allowWorld;
+            if (interactor) interactor.Enabled = allowWorld;
+
             if (!Flow.AttractCameraActive && !game.Dead)
                 player.ExternalView = false;
             else if (Flow.AttractCameraActive)
@@ -378,15 +509,21 @@ namespace HanaMart.UI
         void UpdateFocusVisuals()
         {
             if (!menuItems.TryGetValue(Flow.Screen, out var list)) return;
+            bool isEnding = Flow.Screen == UiScreen.Ending;
             for (int i = 0; i < list.Count; i++)
             {
                 bool focused = i == Flow.FocusIndex;
                 var item = list[i];
-                if (item.Bar) item.Bar.enabled = focused;
+                if (item.Bar) item.Bar.enabled = focused && !isEnding && Flow.Screen != UiScreen.Death;
                 if (item.Label)
                 {
-                    item.Label.color = focused ? Color.white : Muted;
-                    item.Label.rectTransform.anchoredPosition = new Vector2(focused ? 34f : 24f, 0f);
+                    if (isEnding)
+                        item.Label.color = focused ? Color.black : new Color(0.33f, 0.33f, 0.33f, 1f);
+                    else
+                        item.Label.color = focused ? Color.white : Muted;
+
+                    if (Flow.Screen != UiScreen.Death && Flow.Screen != UiScreen.Ending)
+                        item.Label.rectTransform.anchoredPosition = new Vector2(focused ? 34f : 24f, 0f);
                 }
             }
         }
@@ -425,14 +562,16 @@ namespace HanaMart.UI
             canvas.sortingOrder = 25;
             var scaler = root.GetComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1280f, 720f);
+            scaler.referenceResolution = HudLayoutSpec.ReferenceResolution;
             scaler.matchWidthOrHeight = 0.5f;
 
             BuildBootScreen();
             BuildMenuScreen();
             BuildPauseScreen();
             BuildSettingsShell();
-            BuildHelpShell();
+            BuildHelpScreen();
+            BuildDeathScreen();
+            BuildEndingScreen();
         }
 
         void BuildBootScreen()
@@ -535,30 +674,6 @@ namespace HanaMart.UI
             AddFooterPrompts(panel.transform);
         }
 
-        void BuildHelpShell()
-        {
-            var panel = CreateScreen(UiScreen.Help, new Color(0.015f, 0.031f, 0.031f, 0.9f));
-            var title = CreateText(panel.transform, "Title", "Hướng dẫn", 42f, Bright, TextAlignmentOptions.Left);
-            title.fontStyle = FontStyles.Bold;
-            SetAnchored(title.rectTransform, new Vector2(0f, 1f), new Vector2(140f, -80f), new Vector2(500f, 56f));
-
-            var controls = CreateText(panel.transform, "Controls",
-                "<b>BÀN PHÍM & CHUỘT</b>\nW A S D: Di chuyển · Shift: Đi nhanh · C: Ngồi thấp\nE / Chuột trái: Tương tác · Q: Đặt đồ · G: Chào khách\nR: Nội quy · Tab: Việc cần làm · Esc: Tạm dừng",
-                18f, Bright, TextAlignmentOptions.TopLeft);
-            SetAnchored(controls.rectTransform, new Vector2(0f, 1f), new Vector2(140f, -160f), new Vector2(520f, 220f));
-
-            var pad = CreateText(panel.transform, "Gamepad",
-                "<b>TAY CẦM</b>\nL: Di chuyển · R: Nhìn · A: Tương tác · RB: Đặt đồ\nY: Chào khách · X: Nội quy · B: Ngồi thấp · Menu: Tạm dừng",
-                18f, Bright, TextAlignmentOptions.TopLeft);
-            SetAnchored(pad.rectTransform, new Vector2(0f, 1f), new Vector2(680f, -160f), new Vector2(520f, 220f));
-
-            AddMenuButtons(UiScreen.Help, panel.transform, 140f, -560f, new[]
-            {
-                (UiAction.Back, "← Quay lại"),
-            });
-            AddFooterPrompts(panel.transform);
-        }
-
         GameObject CreateScreen(UiScreen screen, Color backdrop)
         {
             var go = new GameObject("Screen_" + screen, typeof(RectTransform), typeof(Image));
@@ -571,7 +686,8 @@ namespace HanaMart.UI
             return go;
         }
 
-        void AddMenuButtons(UiScreen screen, Transform parent, float left, float topY, (UiAction action, string label)[] items)
+        void AddMenuButtons(UiScreen screen, Transform parent, float left, float topY, (UiAction action, string label)[] items,
+            bool centered = false, float width = 480f)
         {
             var list = new List<MenuItemView>(items.Length);
             for (int i = 0; i < items.Length; i++)
@@ -580,7 +696,18 @@ namespace HanaMart.UI
                 var (action, text) = items[i];
                 var row = new GameObject("Item_" + action, typeof(RectTransform), typeof(Image), typeof(Button));
                 row.transform.SetParent(parent, false);
-                SetAnchored(row.GetComponent<RectTransform>(), new Vector2(0f, 1f), new Vector2(left, topY - i * 48f), new Vector2(480f, 44f));
+                if (centered)
+                {
+                    var rt = row.GetComponent<RectTransform>();
+                    rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+                    rt.pivot = new Vector2(0.5f, 0.5f);
+                    rt.anchoredPosition = new Vector2(left, topY - i * 48f);
+                    rt.sizeDelta = new Vector2(width, 44f);
+                }
+                else
+                {
+                    SetAnchored(row.GetComponent<RectTransform>(), new Vector2(0f, 1f), new Vector2(left, topY - i * 48f), new Vector2(width, 44f));
+                }
 
                 var hit = row.GetComponent<Image>();
                 hit.color = new Color(0f, 0f, 0f, 0.001f);
@@ -596,11 +723,18 @@ namespace HanaMart.UI
                 var bar = barGo.GetComponent<Image>();
                 bar.enabled = false;
 
-                var label = CreateText(row.transform, "Text", text, 24f, Muted, TextAlignmentOptions.Left);
+                var label = CreateText(row.transform, "Text", text, 24f, Muted, centered ? TextAlignmentOptions.Center : TextAlignmentOptions.Left);
                 label.fontStyle = FontStyles.Bold;
-                SetAnchored(label.rectTransform, new Vector2(0f, 0.5f), new Vector2(24f, 0f), new Vector2(440f, 40f));
-                label.rectTransform.pivot = new Vector2(0f, 0.5f);
-                label.rectTransform.anchoredPosition = new Vector2(24f, 0f);
+                if (centered)
+                {
+                    Stretch(label.rectTransform);
+                }
+                else
+                {
+                    SetAnchored(label.rectTransform, new Vector2(0f, 0.5f), new Vector2(24f, 0f), new Vector2(width - 40f, 40f));
+                    label.rectTransform.pivot = new Vector2(0f, 0.5f);
+                    label.rectTransform.anchoredPosition = new Vector2(24f, 0f);
+                }
 
                 var relay = row.AddComponent<PointerRelay>();
                 relay.Entered = () =>
@@ -676,7 +810,12 @@ namespace HanaMart.UI
             {
                 game.ShiftStarted -= OnShiftStarted;
                 game.EndingReached -= OnEndingReached;
+                game.ToastRequested -= ShowToast;
+                game.BannerRequested -= ShowBanner;
+                game.WarnRequested -= ShowWarn;
+                game.DeathRecapShown -= ShowDeathRecap;
             }
+            if (hudRoot) Destroy(hudRoot);
             if (root) Destroy(root);
             DestroyFontAsset(hangulFallback);
             DestroyFontAsset(font);

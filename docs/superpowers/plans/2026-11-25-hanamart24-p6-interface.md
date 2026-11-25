@@ -11,10 +11,14 @@ Dùng `source/src/main.js` và markup/CSS của bản gốc làm mẫu bố cụ
   - `Assets/HanaMart/Scripts/Runtime/UI/ShiftInterface.cs`, `ShiftSetup.cs`, hook `PlayerController`/`ShiftGame`/`ShiftHud`: khởi động ở `Boot`, camera attract ngoài giờ ca, menu/tạm dừng/cài đặt/hướng dẫn vỏ, đồng bộ `Time.timeScale = 0` khi tạm dừng và khôi phục khi tiếp tục/thoát, fallback font `Malgun Gothic` cho chữ Hàn.
   - **Xác nhận:** TDD RED (`p6-t1-red.json`, 12/12 fail) → GREEN (`p6-t1-green.json`, 12/12 pass) → toàn bộ `HanaMart.Tests.EditMode` **237/237 PASS** (`p6-t1-full.json`, job `60be88d5e5f14f74b2fc263efb95b7cb`). Play QA `Run Ui Flow` (`ui-flow-smoke.json`), `Run Story Milestones` (`story-smoke.json`), `Run Death Camera` (`death-camera.json`) đều đạt, `play-errors.log` và Console 0 lỗi/cảnh báo, ảnh `p6-t1-menu.png` và `p6-t1-pause.png` đã kiểm tra trực quan.
 
-## Task 2 — HUD và hội thoại
+## Task 2 — HUD và hội thoại (XONG)
 
-- Dịch bố cục đồng hồ, nhiệm vụ, tay cầm đồ, tương tác, thanh giữ E, phụ đề, cảnh cáo và chỉ dẫn. Giữ giấy nội quy, phụ lục, nội quy giả, nhật ký và Sổ tay.
-- Dịch lựa chọn hội thoại, recap thua/điểm checkpoint, hai màn kết thúc và hướng dẫn. Test mở/đóng từng loại cửa sổ, focus tay cầm, bố cục ở 16:9 và menu đang mở không nhận thao tác vào thế giới.
+- **Đã xong:**
+  - `Assets/HanaMart/Scripts/Runtime/Shift/RuleBook.cs`: `RuleEntry`, `RuleView`, `NoteFor`, `BuildView`.
+  - `Assets/HanaMart/Scripts/Runtime/UI/HudModel.cs`: `RulePaperFormatter`, `GuideDirector`, `DialogFocus`, `DeathRecapModel`, `EndingModel`, `TaskListModel`, `HudLayoutSpec`.
+  - `ShiftGame` partials & `UiFlow.ShowScreen`: sự kiện `ToastRequested`, `BannerRequested`, `WarnRequested`, `TasksPanelToggled`, `DeathRecapShown`, hỗ trợ `ExternalDialogInput`, `ExternalTasksPanel`, `PaperIsRules`/`PaperIsHandwritten`.
+  - `ShiftInterface.cs`, `ShiftInterface.Hud.cs`, `ShiftInterface.Screens.cs`: tắt `ShiftHud`/`InteractionPrompt` tạm, HUD đầy đủ (letterbox, flash, đồng hồ + 3 vạch cảnh cáo, chỉ dẫn `◆` + mũi tên rìa, 4 việc chờ + bảng Tab, prompt + thanh giữ E, chào/bỏ qua, đồ cầm + gợi ý theo thiết bị, phụ đề, toast/banner/cảnh cáo đỏ), đối thoại 1–3 + tay cầm, tờ giấy `enableAutoSizing` dấu đỏ `[HANA]` + điều giả + phụ lục + Sổ tay sống sót + nhật ký, màn chết, 2 kết thúc A/B, màn Hướng dẫn 2 cột và giấy hướng dẫn ca đầu tiên (sau 2.6 s khi bấm Nhận ca).
+  - **Xác nhận:** TDD RED (`p6-t2-red.json`) → GREEN (`p6-t2-green.json`, 19/19 pass) → toàn bộ `HanaMart.Tests.EditMode` **244/244 PASS** (`p6-t2-full.json`, job `04c83b4ef9d6462a978cfb2ee86ec0ef`). Play QA `Run Ui Flow`, `Run Hud And Dialog`, `Run Story Milestones`, `Run Death Camera` đều đạt; `play-errors.log` và Console 0 lỗi/cảnh báo; 5 ảnh `p6-t2-{hud,rules,dialog,death,ending}.png` đã kiểm tra trực quan.
 
 ## Task 3 — Cài đặt và mức đồ họa
 

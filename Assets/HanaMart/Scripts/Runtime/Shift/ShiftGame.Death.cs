@@ -211,6 +211,7 @@ namespace HanaMart.Shift
             ClockCaption = null;
             var title = stage.Rule == 0 ? "CA ĐÊM CHẤM DỨT" : $"Quy tắc số {stage.Rule}";
             ShowDialog(title, stage.Reason, new Choice($"Tiếp tục từ {ShiftClock.Format(Run.Progress.SavedHour * 60)}", Retry));
+            DeathRecapShown?.Invoke(stage.Rule, stage.Reason);
         }
 
         void StopDeath()

@@ -36,7 +36,14 @@ namespace HanaMart.UI
             _ => EmptyActions,
         };
 
-        public bool GameplayAllowed(bool overlayOrEndActive) => State == AppState.Play && !overlayOrEndActive;
+        public bool GameplayAllowed(bool overlayOrEndActive) =>
+            State == AppState.Play && Screen == UiScreen.None && !overlayOrEndActive;
+
+        public void ShowScreen(UiScreen screen)
+        {
+            Screen = screen;
+            FocusIndex = 0;
+        }
 
         public bool ShouldLockCursor(bool overlayOrEndActive, bool windowFocused = true) =>
             windowFocused && GameplayAllowed(overlayOrEndActive) && LastDevice == InputDeviceKind.KeyboardMouse;

@@ -33,6 +33,10 @@ namespace HanaMart.Shift
         public bool Ended { get; private set; }
         public bool InputBlocked => Dead || Ended || Dialogue != null || PaperTitle != null;
         public bool ClosedOverlayThisFrame => closedOverlayFrame == Time.frameCount;
+        public bool ExternalDialogInput { get; set; }
+        public bool ExternalTasksPanel { get; set; }
+        public bool PaperIsRules { get; private set; }
+        public bool PaperIsHandwritten { get; private set; }
         public int LastDeathRule { get; private set; } = -1;
         public string Subtitle => subtitleUntil > Time.time ? subtitle : null;
         public string Speaker { get; private set; }
@@ -48,6 +52,11 @@ namespace HanaMart.Shift
         public event Action<string> SceneAction;
         public event Action ShiftStarted;
         public event Action<string> EndingReached;
+        public event Action<string> ToastRequested;
+        public event Action<string, string> BannerRequested;
+        public event Action<string, string> WarnRequested;
+        public event Action TasksPanelToggled;
+        public event Action<int, string> DeathRecapShown;
 
         PlayerController player;
         Interactor interactor;
@@ -81,8 +90,12 @@ namespace HanaMart.Shift
             Run = new ShiftRun(random.NextDouble);
             director = new VisitDirector(random.NextDouble);
             Run.EventReached += OnStoryEvent;
-            Run.CheckpointSaved += (hour, reduced) => Say(reduced ? "Một giờ không vi phạm — bớt 1 cảnh cáo" :
-                $"Đã lưu · {ShiftClock.Format(hour * 60)}", 3);
+            Run.CheckpointSaved += (hour, reduced) =>
+            {
+                string msg = reduced ? "Một giờ không vi phạm — bớt 1 cảnh cáo" : $"Đã lưu · {ShiftClock.Format(hour * 60)}";
+                Say(msg, 3);
+                ToastRequested?.Invoke(msg);
+            };
             InitializeJobs();
             InitializeCinematics();
             if (StartIdle)
@@ -144,7 +157,9 @@ namespace HanaMart.Shift
                 doors.Front.motor.target = doors.Back.motor.target = 0;
                 doors.Freezer.motor.target = 0;
             }
-            Say(retry && Run.Progress.SavedHour > 0 ? "Tiếp tục ca đêm" : "Ca đêm bắt đầu · HANA MART 24", 4);
+            string startBanner = retry && Run.Progress.SavedHour > 0 ? "Tiếp tục ca đêm" : "Ca đêm bắt đầu · HANA MART 24";
+            Say(startBanner, 4);
+            BannerRequested?.Invoke(Run.Clock.Display, startBanner);
             ShiftStarted?.Invoke();
         }
 
@@ -182,7 +197,7 @@ namespace HanaMart.Shift
 
         void ReadDialogInput()
         {
-            if (Dialogue == null) return;
+            if (ExternalDialogInput || Dialogue == null) return;
             for (int i = 0; i < optionInput.Length; ++i)
                 if (optionInput[i]?.WasPressedThisFrame() == true) { SelectOption(i); return; }
             if (Options.Length == 1 && confirmInput?.WasPressedThisFrame() == true) SelectOption(0);
@@ -241,6 +256,7 @@ namespace HanaMart.Shift
         {
             int strikes = Run.Progress.Strike();
             Say($"CẢNH CÁO {strikes}/3 · Quy tắc số {rule}\n{reason}", 5);
+            WarnRequested?.Invoke($"CẢNH CÁO {strikes}/3 · QUY TẮC SỐ {rule}", reason);
             PlayClip("sting");
             player.Rumble(.6f, .4f, .3f);
             if (strikes >= 3) Later(1.8f, () => Die(0, "Bạn đã vi phạm nội quy ba lần. Cửa hàng không giữ nhân viên như bạn."));

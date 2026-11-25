@@ -55,7 +55,63 @@ namespace HanaMart.Shift
             "Nếu ai đó đọc được: mình vẫn còn ở đây, trong tủ đông. Đúng 5 giờ sáng mình sẽ gõ: BA tiếng, HAI tiếng, BA tiếng. Đó là mình thật. Làm ơn mở ra. — Ji-ho",
         };
 
+        public sealed class RuleEntry
+        {
+            public int Number;
+            public string Text;
+            public bool IsFake, IsRed;
+            public bool HasStamp => !IsFake && !IsRed;
+        }
+
+        public sealed class RuleView
+        {
+            public RuleEntry[] Rules;
+            public string Addendum;
+            public string[] Notes;
+        }
+
         public static bool HasNote(int rule) => Notes.ContainsKey(rule);
+        public static string NoteFor(int rule) => Notes.TryGetValue(rule, out string note) ? note : null;
+
+        public static RuleView BuildView(ShiftProgress progress)
+        {
+            var entries = new List<RuleEntry>(Rules.Length + 1);
+            for (int i = 0; i < Rules.Length; ++i)
+            {
+                int number = i + 1;
+                bool fake = progress != null && progress.Flags.GetValueOrDefault("fake" + number) != 0 && Forgeries.ContainsKey(number);
+                entries.Add(new RuleEntry
+                {
+                    Number = number,
+                    Text = fake ? Forgeries[number] : Rules[i],
+                    IsFake = fake,
+                });
+            }
+            if (progress != null && progress.Flags.GetValueOrDefault("red") != 0)
+            {
+                entries.Add(new RuleEntry
+                {
+                    Number = 14,
+                    Text = RedHour,
+                    IsRed = true,
+                });
+            }
+
+            var notes = new List<string>();
+            if (progress != null)
+            {
+                foreach (int rule in progress.LearnedRules)
+                    if (Notes.TryGetValue(rule, out string note)) notes.Add(note);
+            }
+
+            return new RuleView
+            {
+                Rules = entries.ToArray(),
+                Addendum = progress != null && progress.Flags.GetValueOrDefault("addendum") != 0 ? Addendum : null,
+                Notes = notes.ToArray(),
+            };
+        }
+
         public static string DiaryPage(int number) => Diary[number - 1];
 
         public static string Text(ShiftProgress progress)

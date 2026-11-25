@@ -13,6 +13,19 @@ namespace HanaMart.Shift
         public ShiftTasks Tasks { get; private set; }
         public string PaperTitle { get; private set; }
         public string PaperText { get; private set; }
+        public bool Restocking => restocking;
+        public bool MicrowaveReady => microwave.Ready;
+        public string ActiveMicrowaveOven => microwave.Oven;
+        public bool BackDoorOpen => doors && doors.Back.motor.target > .5f;
+
+        public Vector3? HitWorldPosition(string hitId)
+        {
+            if (string.IsNullOrEmpty(hitId)) return null;
+            if (markers.TryGetValue("H:" + hitId, out var m) && m && m.gameObject.activeInHierarchy)
+                return m.transform.position;
+            var hit = GameObject.Find("H:" + hitId);
+            return hit && hit.activeInHierarchy ? hit.transform.position : null;
+        }
 
         readonly MicrowaveCycle microwave = new();
         readonly ShiftPhone phone = new();
@@ -165,6 +178,7 @@ namespace HanaMart.Shift
         {
             if (!Tasks.Add(id, text)) return;
             Say("Việc mới: " + text, 3);
+            ToastRequested?.Invoke("Việc mới: " + text);
             PlayClip("ui_task");
         }
 
@@ -263,7 +277,7 @@ namespace HanaMart.Shift
             if (PaperTitle != null)
             {
                 if (pauseInput?.WasPressedThisFrame() == true || confirmInput?.WasPressedThisFrame() == true ||
-                    rulesInput?.WasPressedThisFrame() == true || tasksInput?.WasPressedThisFrame() == true) ClosePaper();
+                    rulesInput?.WasPressedThisFrame() == true || (!ExternalTasksPanel && tasksInput?.WasPressedThisFrame() == true)) ClosePaper();
                 return;
             }
             if (Dialogue != null || Dead || Ended) return;
@@ -271,10 +285,12 @@ namespace HanaMart.Shift
             if (tasksInput?.WasPressedThisFrame() == true) OpenTasks();
         }
 
-        public void ShowPaper(string title, string text)
+        public void ShowPaper(string title, string text, bool isRules = false, bool isHandwritten = false)
         {
             PaperTitle = title;
             PaperText = text;
+            PaperIsRules = isRules;
+            PaperIsHandwritten = isHandwritten;
             SetGameplay(false);
         }
 
@@ -282,25 +298,34 @@ namespace HanaMart.Shift
         {
             if (PaperTitle != null) closedOverlayFrame = Time.frameCount;
             PaperTitle = PaperText = null;
+            PaperIsRules = PaperIsHandwritten = false;
             SetGameplay(!Dead && !Ended && Dialogue == null);
         }
 
         void OpenRules()
         {
-            ShowPaper("NỘI QUY CA ĐÊM", RuleBook.Text(Run.Progress));
+            ShowPaper("NỘI QUY CA ĐÊM", RuleBook.Text(Run.Progress), isRules: true);
             if (rulesRead && !ReadDiary("rulesBack")) FindDiary("rulesBack");
             rulesRead = true;
             CompleteTask("rules");
         }
 
-        void OpenTasks() => ShowPaper("VIỆC CẦN LÀM", string.Join("\n", Tasks.Items.Select(t => (t.Done ? "☑ " : "☐ ") + t.Text)));
+        void OpenTasks()
+        {
+            if (ExternalTasksPanel)
+            {
+                TasksPanelToggled?.Invoke();
+                return;
+            }
+            ShowPaper("VIỆC CẦN LÀM", string.Join("\n", Tasks.Items.Select(t => (t.Done ? "☑ " : "☐ ") + t.Text)));
+        }
         bool ReadDiary(string id) => Run.Progress.Diaries.Contains(id);
 
         void FindDiary(string id)
         {
             if (!Run.Progress.Diaries.Add(id)) return;
             int pages = Run.Progress.Diaries.Count;
-            ShowPaper($"NHẬT KÝ CỦA JI-HO · {pages}/5", RuleBook.DiaryPage(pages));
+            ShowPaper($"NHẬT KÝ CỦA JI-HO · {pages}/5", RuleBook.DiaryPage(pages), isHandwritten: true);
             PlayClip("paper");
         }
 
