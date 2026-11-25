@@ -153,6 +153,12 @@ namespace HanaMart.UI
                 game.SfxVolume = s.sfx;
                 game.ApplyLightPreset(preset.AreaLights, preset.ExtraLights);
             }
+            var weather = FindFirstObjectByType<HanaMart.Store.StoreWeather>();
+            if (weather)
+            {
+                int rainCount = s.quality switch { "low" => 1200, "high" => 3600, "ultra" or "cine" => 5000, _ => 2400 };
+                weather.ApplyRainCount(rainCount);
+            }
 
             var film = view ? view.GetComponent<FilmSettings>() : null;
             if (film && (!game || !game.Dead))

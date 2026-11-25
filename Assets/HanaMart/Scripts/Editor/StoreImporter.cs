@@ -102,6 +102,8 @@ namespace HanaMart.EditorTools
             AddProbe(root);
             ApplySceneSettings(scene, gltf, meta);
             root.AddComponent<StoreDoors>();
+            var weather = root.AddComponent<StoreWeather>();
+            weather.Rebuild();
             return root;
         }
 
@@ -165,6 +167,28 @@ namespace HanaMart.EditorTools
                 rr.shadowCastingMode = ex != null && (bool?)ex["castShadow"] == true ? ShadowCastingMode.On : ShadowCastingMode.Off;
         }
 
+        public static float ComputeLightIntensity(string kind, float intensity, float decay, float width = 1f, float height = 1f)
+        {
+            switch (kind)
+            {
+                case "Point":
+                case "Spot":
+                {
+                    float decayScale = decay > 0f && decay < 1.95f ? Mathf.Pow(3.8f, 2f - decay) : 1f;
+                    return intensity / Mathf.PI * decayScale;
+                }
+                case "RectArea":
+                    return intensity * width * height / Mathf.PI * 1.2f;
+                default:
+                    return intensity;
+            }
+        }
+
+        public static float EffectiveSmoothness(float roughnessFactor, float? roughnessMapMean)
+        {
+            return Mathf.Clamp01(1f - roughnessFactor * (roughnessMapMean ?? 1f));
+        }
+
         /// Màu Three.js (r152+) là tuyến tính; Light.color / RenderSettings của Unity nhận màu sRGB.
         static Color Col(JToken t, float k = 1f) => new Color((float)t[0] * k, (float)t[1] * k, (float)t[2] * k).gamma;
 
@@ -172,6 +196,7 @@ namespace HanaMart.EditorTools
         {
             string kind = (string)ex["kind"];
             float I = (float)ex["intensity"];
+            float decay = (float?)ex["decay"] ?? 2f;
             if (kind == "Hemisphere")
             {
                 var hs = go.AddComponent<HemisphereAmbient>(); hs.sky = Col(ex["color"]); hs.ground = Col(ex["groundColor"]); hs.intensity = I;
@@ -182,24 +207,25 @@ namespace HanaMart.EditorTools
             var l = holder.AddComponent<Light>();
             l.color = Col(ex["color"]);
             l.shadows = (bool?)ex["castShadow"] == true ? LightShadows.Soft : LightShadows.None;
+            if (go.name.Contains("alley")) l.renderMode = LightRenderMode.ForcePixel;
             float dist = (float?)ex["distance"] ?? 0f;
             switch (kind)
             {
                 case "Point":
-                    l.type = LightType.Point; l.range = dist > 0 ? dist : 25f; l.intensity = I / Mathf.PI; break; // distance 0 của Three.js = không giới hạn
+                    l.type = LightType.Point; l.range = dist > 0 ? dist : 25f; l.intensity = ComputeLightIntensity(kind, I, decay); break;
                 case "Spot":
-                    l.type = LightType.Spot; l.range = dist > 0 ? dist : 25f; l.intensity = I / Mathf.PI;
+                    l.type = LightType.Spot; l.range = dist > 0 ? dist : 25f; l.intensity = ComputeLightIntensity(kind, I, decay);
                     float a = (float)ex["angle"] * Mathf.Rad2Deg * 2f; l.spotAngle = a; l.innerSpotAngle = a * (1f - ((float?)ex["penumbra"] ?? 0f));
                     if (ex["target"] is JArray tg) holder.transform.LookAt(ThreeCoords.ToUnity((float)tg[0], (float)tg[1], (float)tg[2]));
                     break;
                 case "RectArea": // URP không có đèn vùng realtime → đèn spot rộng chiếu theo hướng -Z của Three.js
                     l.type = LightType.Spot; l.spotAngle = 150f; l.innerSpotAngle = 40f; l.range = 8f;
-                    l.intensity = I * (float)ex["width"] * (float)ex["height"] / Mathf.PI * 1.2f; // hệ số chỉnh theo ảnh so sánh (Task 7)
+                    l.intensity = ComputeLightIntensity(kind, I, decay, (float)ex["width"], (float)ex["height"]);
                     holder.transform.localRotation = Quaternion.Euler(0, 180, 0);
                     var ar = holder.AddComponent<AreaLightInfo>(); ar.width = (float)ex["width"]; ar.height = (float)ex["height"]; ar.threeIntensity = I;
                     break;
                 default:
-                    l.type = LightType.Directional; l.intensity = I; break;
+                    l.type = LightType.Directional; l.intensity = ComputeLightIntensity(kind, I, decay); break;
             }
         }
 
@@ -281,10 +307,40 @@ namespace HanaMart.EditorTools
         {
             readonly Dictionary<string, JObject> src = new Dictionary<string, JObject>();
             readonly Dictionary<Material, Material> cache = new Dictionary<Material, Material>();
+            readonly JArray textures, images;
+            readonly Dictionary<string, float> roughnessMeans = new Dictionary<string, float>();
             public MaterialConverter(JObject gltf)
             {
                 Directory.CreateDirectory(MatDir);
+                textures = gltf["textures"] as JArray;
+                images = gltf["images"] as JArray;
                 foreach (JObject m in (JArray)gltf["materials"]) { var n = (string)m["name"]; if (!src.ContainsKey(n)) src[n] = m; }
+            }
+
+            float? ResolveRoughnessMean(JObject ex)
+            {
+                if (ex == null || ex["roughnessMap"] == null || textures == null || images == null) return null;
+                int texIdx = (int)ex["roughnessMap"];
+                if (texIdx < 0 || texIdx >= textures.Count) return null;
+                int imgIdx = (int?)textures[texIdx]?["source"] ?? -1;
+                if (imgIdx < 0 || imgIdx >= images.Count) return null;
+                string uri = (string)images[imgIdx]?["uri"];
+                if (string.IsNullOrEmpty(uri)) return null;
+                if (roughnessMeans.TryGetValue(uri, out float cached)) return cached;
+                string fullPath = Path.Combine(Path.GetDirectoryName(GltfPath), uri);
+                if (!File.Exists(fullPath)) return null;
+                var tmp = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+                try
+                {
+                    if (!tmp.LoadImage(File.ReadAllBytes(fullPath))) return null;
+                    var px = tmp.GetPixels32();
+                    double sum = 0;
+                    for (int i = 0; i < px.Length; i++) sum += px[i].g / 255.0;
+                    float mean = px.Length > 0 ? (float)(sum / px.Length) : 1f;
+                    roughnessMeans[uri] = mean;
+                    return mean;
+                }
+                finally { Object.DestroyImmediate(tmp); }
             }
 
             public Material Convert(Material m)
@@ -313,7 +369,8 @@ namespace HanaMart.EditorTools
                 if (!unlit)
                 {
                     mat.SetFloat("_Metallic", m.HasProperty("metallicFactor") ? m.GetFloat("metallicFactor") : 0f);
-                    mat.SetFloat("_Smoothness", 1f - (m.HasProperty("roughnessFactor") ? m.GetFloat("roughnessFactor") : 1f));
+                    float roughFactor = m.HasProperty("roughnessFactor") ? m.GetFloat("roughnessFactor") : 1f;
+                    mat.SetFloat("_Smoothness", EffectiveSmoothness(roughFactor, ResolveRoughnessMean(ex)));
                     var nrm = m.HasProperty("normalTexture") ? m.GetTexture("normalTexture") : null;
                     mat.SetTexture("_BumpMap", nrm);
                     if (nrm) { mat.EnableKeyword("_NORMALMAP"); mat.SetFloat("_BumpScale", m.HasProperty("normalTexture_scale") ? m.GetFloat("normalTexture_scale") : 1f); }

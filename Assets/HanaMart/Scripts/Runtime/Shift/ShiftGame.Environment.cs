@@ -424,6 +424,8 @@ namespace HanaMart.Shift
             ApplyAmbient(inside ? litAmbient : .06f, inside ? litTint : Color.white);
             foreach (var light in lamps)
                 if (light.Lamp) ApplyLamp(light, light.Off || !(light.Inside ? inside : outside) ? 0 : 1);
+            var weather = FindFirstObjectByType<StoreWeather>();
+            if (weather) weather.SetPower(inside, outside);
         }
 
         void TintStore(int rgb, float environment)

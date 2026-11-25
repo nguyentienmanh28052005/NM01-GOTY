@@ -8,11 +8,12 @@ Chỉ đánh dấu hoàn tất khi có bằng chứng cho các mục nghiệm th
 - TDD: RED 5/5 fail (`32364cb074a34337b8ac2b464d4bb67d`, `p7-t1-red.json`) → `SimBotTests` 5/5 PASS (`ea1fbb88d3bc4f82a9123119b60320a6`, `p7-t1-sim.json`) → toàn assembly **255/255 PASS** (`0309b5c02d824e1bbfa9c79ee2671935`, `p7-t1-full.json`, 15.47 s).
 - Play QA `Run Sim Batch` (`Logs/HanaMart/sim-report.json`): `careful` 5/5 tới 06:00 (0 kẹt, TB **13.0** chết [11..16], 90.5 phút; khớp Three.js v2.2 ~13), `average` 5/5 tới 06:00 (0 kẹt, TB **20.2** chết [18..24], 119.7 phút; khớp Three.js v2.2 ~19), `careless` 4/4 tới 06:00 (0 kẹt, TB 28.25 chết); `play-errors.log` và Console 0 lỗi.
 
-## Task 2 — So hình và hiệu năng
+## Task 2 — So hình và hiệu năng **(XONG)**
 
-- Dùng `tools/three-export` chụp cặp ảnh Three.js và Unity với cùng vị trí, hướng, FOV, thời gian và preset. Giữ đủ các điểm chụp đang có, bổ sung cửa/mưa/đèn hẻm và cảnh có khách hoặc biến cố đại diện.
-- Cập nhật `docs/visual/compare/report.md` với chênh lệch độ sáng, màu vùng tối và kiểm mắt. Xử lý chênh lệch tủ mát/hẻm, mưa và phản sáng còn mở trong báo cáo lần một. Ghi riêng khác biệt do bốn model và hàng thay thế đã duyệt.
-- Đo thời gian frame ở cùng thiết lập trước/sau tối ưu. Kiểm URP với cảnh nặng có NPC và FX. Chỉ ghi số thực đo được.
+- Đã bổ sung `RainStreaks.shader`, `LampCone.shader`, `StoreWeather.cs` (mưa GPU, 12 vệt đường ướt, 2 quầng đèn đường `S:cones[0..1]`), bù decay ánh sáng hẻm + `ForcePixel` và tính `_Smoothness` từ `roughnessMap` trong `StoreImporter.cs`.
+- TDD: `StoreWeatherTests` RED 5/5 (`7a4768c1d3964aed9324218d34cbcc6e`, `p7-t2-red.json`) → GREEN 5/5 (`1017c8329c4e42de91087e9b0b607cea`, `p7-t2-weather.json`) → toàn assembly **260/260 PASS** (`08cc3dac3fe8437292975b70d87c8e5f`, `p7-t2-full.json`, 17.77 s).
+- Đã chụp 14 góc Three.js (`capture_three_cdp.mjs`) ↔ Unity (`HanaMart/Capture Viewpoints`) + 2 cảnh động Play (`dynamic-scenes.jpg`); cập nhật `docs/visual/compare/report.md` (`alley` từ −48% → −4%, `fridges` −21% do hàng thay thế, ghi rõ khác biệt 4 model & asset đã duyệt).
+- Thực đo URP Play mode 2560×1440 (`Logs/HanaMart/perf-report.json`, 3 NPC + FX + HUD): `low` 56.4 FPS (17.73 ms), `medium` 55.5 FPS (18.01 ms), `medium_dynres` 67.1 FPS (14.90 ms), `high` 70.2 FPS (14.25 ms).
 
 ## Task 3 — Chơi một ca thật và kiểm tra bàn giao
 
