@@ -687,6 +687,301 @@
           "isPartOfComposite": false
         }
       ]
+    },
+    {
+      "name": "UI",
+      "id": "b1f8498e-1b95-40a6-9a8d-7d5c504b8e2f",
+      "actions": [
+        {
+          "name": "UiNavigate",
+          "type": "Value",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a001",
+          "expectedControlType": "Vector2",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": true
+        },
+        {
+          "name": "UiConfirm",
+          "type": "Button",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a002",
+          "expectedControlType": "Button",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": false
+        },
+        {
+          "name": "UiBack",
+          "type": "Button",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a003",
+          "expectedControlType": "Button",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": false
+        },
+        {
+          "name": "UiTabPrev",
+          "type": "Button",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a004",
+          "expectedControlType": "Button",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": false
+        },
+        {
+          "name": "UiTabNext",
+          "type": "Button",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a005",
+          "expectedControlType": "Button",
+          "processors": "",
+          "interactions": "",
+          "initialStateCheck": false
+        }
+      ],
+      "bindings": [
+        {
+          "name": "WASD",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a101",
+          "path": "2DVector",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiNavigate",
+          "isComposite": true,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "up",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a102",
+          "path": "<Keyboard>/w",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiNavigate",
+          "isComposite": false,
+          "isPartOfComposite": true
+        },
+        {
+          "name": "down",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a103",
+          "path": "<Keyboard>/s",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiNavigate",
+          "isComposite": false,
+          "isPartOfComposite": true
+        },
+        {
+          "name": "left",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a104",
+          "path": "<Keyboard>/a",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiNavigate",
+          "isComposite": false,
+          "isPartOfComposite": true
+        },
+        {
+          "name": "right",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a105",
+          "path": "<Keyboard>/d",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiNavigate",
+          "isComposite": false,
+          "isPartOfComposite": true
+        },
+        {
+          "name": "Arrows",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a106",
+          "path": "2DVector",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiNavigate",
+          "isComposite": true,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "up",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a107",
+          "path": "<Keyboard>/upArrow",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiNavigate",
+          "isComposite": false,
+          "isPartOfComposite": true
+        },
+        {
+          "name": "down",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a108",
+          "path": "<Keyboard>/downArrow",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiNavigate",
+          "isComposite": false,
+          "isPartOfComposite": true
+        },
+        {
+          "name": "left",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a109",
+          "path": "<Keyboard>/leftArrow",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiNavigate",
+          "isComposite": false,
+          "isPartOfComposite": true
+        },
+        {
+          "name": "right",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a110",
+          "path": "<Keyboard>/rightArrow",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiNavigate",
+          "isComposite": false,
+          "isPartOfComposite": true
+        },
+        {
+          "name": "",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a111",
+          "path": "<Gamepad>/dpad",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiNavigate",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a112",
+          "path": "<Gamepad>/leftStick",
+          "interactions": "",
+          "processors": "stickDeadzone(min=0.45,max=1)",
+          "groups": "",
+          "action": "UiNavigate",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a201",
+          "path": "<Keyboard>/enter",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiConfirm",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a202",
+          "path": "<Keyboard>/space",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiConfirm",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a203",
+          "path": "<Gamepad>/buttonSouth",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiConfirm",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a301",
+          "path": "<Keyboard>/escape",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiBack",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a302",
+          "path": "<Keyboard>/backspace",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiBack",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a303",
+          "path": "<Gamepad>/buttonEast",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiBack",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a401",
+          "path": "<Keyboard>/q",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiTabPrev",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a402",
+          "path": "<Gamepad>/leftShoulder",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiTabPrev",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a501",
+          "path": "<Keyboard>/e",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiTabNext",
+          "isComposite": false,
+          "isPartOfComposite": false
+        },
+        {
+          "name": "",
+          "id": "e4d12f0c-22ab-48c4-9418-e1f8e7d3a502",
+          "path": "<Gamepad>/rightShoulder",
+          "interactions": "",
+          "processors": "",
+          "groups": "",
+          "action": "UiTabNext",
+          "isComposite": false,
+          "isPartOfComposite": false
+        }
+      ]
     }
   ],
   "controlSchemes": []

@@ -81342,6 +81342,7 @@ GameObject:
   - component: {fileID: 651042149}
   - component: {fileID: 651042151}
   - component: {fileID: 651042150}
+  - component: {fileID: 651042152}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -81770,6 +81771,19 @@ MonoBehaviour:
   actorCatalog: {fileID: 11400000, guid: 8abfd592fb13b9e4eacc93787adc975a, type: 2}
   audioBank: {fileID: 11400000, guid: 13eccd1a0328605499215e250fc4bb2e, type: 2}
   products: {fileID: 11400000, guid: 03f961e4f2e0dcf4291536a06336a3be, type: 2}
+--- !u!114 &651042152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 651042140}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 475b261c66482ba42a034bc4679b6055, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: HanaMart.Runtime::HanaMart.UI.ShiftInterface
+  sourceFont: {fileID: 12800000, guid: af52c2db01dd3954fb5ab74a0b9c742f, type: 3}
 --- !u!1001 &651771393
 PrefabInstance:
   m_ObjectHideFlags: 0

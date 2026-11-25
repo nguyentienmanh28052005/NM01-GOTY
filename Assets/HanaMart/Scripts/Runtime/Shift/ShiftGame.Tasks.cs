@@ -280,6 +280,7 @@ namespace HanaMart.Shift
 
         public void ClosePaper()
         {
+            if (PaperTitle != null) closedOverlayFrame = Time.frameCount;
             PaperTitle = PaperText = null;
             SetGameplay(!Dead && !Ended && Dialogue == null);
         }

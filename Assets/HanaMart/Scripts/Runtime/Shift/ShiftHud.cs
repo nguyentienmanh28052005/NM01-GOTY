@@ -57,6 +57,8 @@ namespace HanaMart.Shift
         void LateUpdate()
         {
             if (!root || game.Run == null) return;
+            root.SetActive(!game.Idle);
+            if (game.Idle) return;
             status.text = $"{game.ClockCaption ?? game.Run.Clock.Display}\n{game.Run.Progress.Strikes}/3";
             subtitle.text = game.Subtitle;
             greet.text = game.ActiveDeath?.CanSkip == true ? "[E] Bỏ qua" :

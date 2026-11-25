@@ -119,6 +119,7 @@ namespace HanaMart.Shift
 
         void LateUpdate()
         {
+            if (Idle || Paused) return;
             float dt = Mathf.Min(.05f, Time.unscaledDeltaTime);
             UpdateCinematicsLate(dt);
             var stage = death;

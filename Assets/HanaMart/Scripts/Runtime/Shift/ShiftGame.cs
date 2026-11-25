@@ -26,8 +26,13 @@ namespace HanaMart.Shift
         [SerializeField] AudioBank audioBank;
         [SerializeField] ProductCatalog products;
         public ShiftRun Run { get; private set; }
+        public bool StartIdle { get; set; }
+        public bool Idle { get; private set; }
+        public bool Paused { get; set; }
         public bool Dead { get; private set; }
         public bool Ended { get; private set; }
+        public bool InputBlocked => Dead || Ended || Dialogue != null || PaperTitle != null;
+        public bool ClosedOverlayThisFrame => closedOverlayFrame == Time.frameCount;
         public int LastDeathRule { get; private set; } = -1;
         public string Subtitle => subtitleUntil > Time.time ? subtitle : null;
         public string Speaker { get; private set; }
@@ -41,6 +46,8 @@ namespace HanaMart.Shift
         public event Action<ShiftEvent> StoryEvent;
         public event Action<string> RingRequested;
         public event Action<string> SceneAction;
+        public event Action ShiftStarted;
+        public event Action<string> EndingReached;
 
         PlayerController player;
         Interactor interactor;
@@ -53,6 +60,7 @@ namespace HanaMart.Shift
         VisitDirector director;
         float subtitleUntil;
         string subtitle;
+        int closedOverlayFrame = -1;
 
         void Start()
         {
@@ -77,11 +85,40 @@ namespace HanaMart.Shift
                 $"Đã lưu · {ShiftClock.Format(hour * 60)}", 3);
             InitializeJobs();
             InitializeCinematics();
-            NewShift();
+            if (StartIdle)
+            {
+                Idle = true;
+                SetGameplay(false);
+            }
+            else
+            {
+                NewShift();
+            }
         }
 
         public void NewShift() => ResetShift(false);
         public void Retry() => ResetShift(true);
+
+        public void ReturnToMenu()
+        {
+            StopAllCoroutines();
+            StopDeath();
+            ResetCinematics();
+            ClearGuests();
+            ClosePaper();
+            CloseDialog();
+            ResetJobs(false);
+            Power(true, true);
+            TintStore(0xffffff, 1);
+            Dead = Ended = false;
+            LastDeathRule = -1;
+            Ending = null;
+            Idle = true;
+            Paused = false;
+            subtitle = null;
+            subtitleUntil = 0;
+            SetGameplay(false);
+        }
 
         void ResetShift(bool retry)
         {
@@ -92,6 +129,8 @@ namespace HanaMart.Shift
             if (retry) Run.Retry();
             else { Run.NewShift(); TotalSold = 0; }
             director.Reset(Run.Progress.SavedHour > 0);
+            Idle = false;
+            Paused = false;
             Dead = Ended = false;
             LastDeathRule = -1;
             ResetJobs(retry);
@@ -106,11 +145,12 @@ namespace HanaMart.Shift
                 doors.Freezer.motor.target = 0;
             }
             Say(retry && Run.Progress.SavedHour > 0 ? "Tiếp tục ca đêm" : "Ca đêm bắt đầu · HANA MART 24", 4);
+            ShiftStarted?.Invoke();
         }
 
         void Update()
         {
-            if (Run == null) return;
+            if (Run == null || Idle || Paused) return;
             ReadDialogInput();
             ReadPaperInput();
             if (Dead || Ended) return;
@@ -172,6 +212,7 @@ namespace HanaMart.Shift
 
         public void CloseDialog()
         {
+            if (Dialogue != null) closedOverlayFrame = Time.frameCount;
             Speaker = Dialogue = null;
             Options = Array.Empty<Choice>();
             SetGameplay(!Dead && !Ended && PaperTitle == null);
@@ -179,9 +220,10 @@ namespace HanaMart.Shift
 
         void SetGameplay(bool enabled)
         {
-            player.GameplayEnabled = enabled;
-            player.Motor.frozen = !enabled;
-            interactor.Enabled = enabled;
+            bool active = enabled && !Idle && !Paused;
+            player.GameplayEnabled = active;
+            player.Motor.frozen = !active;
+            interactor.Enabled = active;
         }
 
         public bool HasFlag(string key) => Run.Progress.Flags.TryGetValue(key, out int value) && value != 0;

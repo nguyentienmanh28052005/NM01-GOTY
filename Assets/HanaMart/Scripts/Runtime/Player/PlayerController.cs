@@ -21,6 +21,8 @@ namespace HanaMart.Player
         public event Action<StepResult> Stepped;
         public bool GameplayEnabled { get; set; } = true;
         public bool ExternalView { get; set; }
+        public bool AutoManageCursor { get; set; } = true;
+        public bool IsFocused => focused;
         public float CurrentFov => 72f * (1f - Motor.zoom * .4f);
         public float roll;
         Camera view;
@@ -48,7 +50,7 @@ namespace HanaMart.Player
         {
             if (storeNavMesh) navMeshInstance = NavMesh.AddNavMeshData(storeNavMesh);
             if (Input) Input.Enable();
-            LockCursor(true);
+            if (AutoManageCursor && GameplayEnabled) LockCursor(true);
         }
         void OnDisable()
         {
@@ -79,8 +81,11 @@ namespace HanaMart.Player
         }
         void Update()
         {
-            if (Keyboard.current?.escapeKey.wasPressedThisFrame == true) LockCursor(false);
-            if (GameplayEnabled && focused && Mouse.current?.leftButton.wasPressedThisFrame == true) LockCursor(true);
+            if (AutoManageCursor)
+            {
+                if (Keyboard.current?.escapeKey.wasPressedThisFrame == true) LockCursor(false);
+                if (GameplayEnabled && focused && Mouse.current?.leftButton.wasPressedThisFrame == true) LockCursor(true);
+            }
             var state = default(PlayerInputState);
             if (GameplayEnabled && focused && Input)
             {

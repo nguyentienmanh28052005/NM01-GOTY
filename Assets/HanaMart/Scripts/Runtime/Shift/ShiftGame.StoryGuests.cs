@@ -159,6 +159,7 @@ namespace HanaMart.Shift
         void PresentEnding(bool rescued)
         {
             Ending = rescued ? "B" : "A";
+            EndingReached?.Invoke(Ending);
             var progress = Run.Progress;
             string body = rescued
                 ? "Bạn và Ji-ho bước ra ngoài đúng lúc trời hửng sáng. Mưa đã tạnh. Ji-ho nhìn lại cửa hàng rất lâu rồi nói: \"Đừng bao giờ quay lại ca đêm.\" Phía sau lưng, tấm biển HANA MART 24 tắt phụt — lần đầu tiên sau nhiều năm."
