@@ -28,6 +28,7 @@ namespace HanaMart.Shift
         public ShiftRun Run { get; private set; }
         public bool Dead { get; private set; }
         public bool Ended { get; private set; }
+        public int LastDeathRule { get; private set; } = -1;
         public string Subtitle => subtitleUntil > Time.time ? subtitle : null;
         public string Speaker { get; private set; }
         public string Dialogue { get; private set; }
@@ -89,6 +90,7 @@ namespace HanaMart.Shift
             else { Run.NewShift(); TotalSold = 0; }
             director.Reset(Run.Progress.SavedHour > 0);
             Dead = Ended = false;
+            LastDeathRule = -1;
             ResetJobs(retry);
             CloseDialog();
             player.Motor.pos = new Vector2(.85f, 4.4f);
@@ -202,6 +204,7 @@ namespace HanaMart.Shift
         {
             if (Dead || Ended) return;
             Run.Progress.RecordDeath(rule);
+            LastDeathRule = rule;
             Run.Clock.Running = false;
             Dead = true;
             ClosePaper();

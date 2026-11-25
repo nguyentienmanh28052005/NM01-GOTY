@@ -37,10 +37,14 @@ namespace HanaMart.Shift
         float cameraFrame, cctvGhostSeconds;
         int cameraTick, printGeneration;
         float ghostDoorFraction = .35f;
+        float baseAmbient, baseReflection;
+        bool insidePower = true, outsidePower = true;
 
         void BindEnvironment(StoreMarker[] sceneObjects)
         {
             tintBlock = new MaterialPropertyBlock();
+            baseAmbient = RenderSettings.ambientIntensity;
+            baseReflection = RenderSettings.reflectionIntensity;
             foreach (var marker in sceneObjects)
             {
                 if (marker.kind != StoreMarker.Kind.Light || !marker.TryGetComponent<Light>(out var lamp)) continue;
@@ -70,6 +74,8 @@ namespace HanaMart.Shift
             if (cctvDouble) cctvDouble.Remove();
             if (cctvGhost) cctvGhost.Remove();
             cctvDouble = cctvGhost = null;
+            Power(true, true);
+            TintStore(0xffffff, 1);
             foreach (var light in lamps)
             {
                 if (!light.Lamp) continue;
@@ -95,7 +101,8 @@ namespace HanaMart.Shift
             {
                 if (!light.Lamp) continue;
                 float variance = light.FlickerUntil > Time.time && Mathf.Sin(Time.time * 47 + light.Lamp.GetInstanceID()) < .35f ? .19f : 1;
-                light.Lamp.intensity = light.Off ? 0 : light.Brightness * variance;
+                bool powered = light.Inside ? insidePower : outsidePower;
+                light.Lamp.intensity = light.Off || !powered ? 0 : light.Brightness * variance;
             }
             if (HasFlag("cctvGhost"))
             {
@@ -366,6 +373,23 @@ namespace HanaMart.Shift
             renderer.GetPropertyBlock(tintBlock);
             tintBlock.SetColor("_BaseColor", Hex(rgb));
             renderer.SetPropertyBlock(tintBlock);
+        }
+
+        void Power(bool inside, bool outside)
+        {
+            insidePower = inside;
+            outsidePower = outside;
+            foreach (var light in lamps)
+                if (light.Lamp) light.Lamp.intensity = light.Off || !(light.Inside ? inside : outside) ? 0 : light.Brightness;
+        }
+
+        void TintStore(int rgb, float environment)
+        {
+            Color tint = Hex(rgb);
+            foreach (var light in lamps)
+                if (light.Lamp && light.Inside) light.Lamp.color = light.Color * tint;
+            RenderSettings.ambientIntensity = baseAmbient * environment;
+            RenderSettings.reflectionIntensity = baseReflection * environment;
         }
 
         static Color Hex(int rgb) => new Color32((byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb, 255);

@@ -43,6 +43,7 @@ namespace HanaMart.Shift
             StoryEvent += JobEvent;
             SceneAction += JobAction;
             RingRequested += RingPhone;
+            StoryEvent += HazardEvent;
         }
 
         void ResetJobs(bool retry)
@@ -65,6 +66,7 @@ namespace HanaMart.Shift
             Stock("shelfRamen", ramenFull);
             Stock("shelfMilk", milkFull);
             restocking = false;
+            ResetHazards();
             ResetEnvironment();
             if (doors)
             {
@@ -77,6 +79,8 @@ namespace HanaMart.Shift
         {
             TickPhone(dt);
             UpdateOven(dt);
+            UpdateHazards(dt);
+            if (Dead || Ended) return;
             UpdateEnvironment(dt);
             var p = player.Motor.pos;
             if (Tasks.Pending("storage") && p.y < -.6f && (checkTime += dt) > 1.5f)
@@ -153,6 +157,7 @@ namespace HanaMart.Shift
                 case "steps": Ambient("steps"); break;
                 case "stationSteam": SteamAt(new Vector3(11.5f, 1.1f, 5.35f), 6, 14); break;
                 case "barSteam": SteamAt(new Vector3(8, .98f, 7.6f), 22, 7); break;
+                case "chase": StartChase(); break;
             }
         }
 
@@ -222,9 +227,13 @@ namespace HanaMart.Shift
                 case "shelfRamen": case "shelfMilk": BeginRestock(id); break;
                 case "dumpster": ThrowTrash(); break;
                 case "micro1": case "micro2": UseMicrowave(id); break;
-                case "freezer": case "backDoor": case "fridgeDoor":
+                case "freezer": OpenFreezer(); break;
+                case "deliveryStack": DeliveryDialog(); break;
+                case "backDoor": case "fridgeDoor":
                     if (doors) doors.Use(id, interactor.Current);
                     PlayClip("door");
+                    if (id == "backDoor" && doors && doors.Back.motor.target > 0 && HasFlag("delivery") && !HasFlag("deliveryDone"))
+                        Say("Người giao hàng: Hàng của chi nhánh đây. Đếm rồi ký giúp tôi nhé.");
                     break;
                 case "drawer": case "locker": FindDiary(id); break;
                 case "breaker": Say(HasFlag("blackout") ? "Nội quy số 10: ngồi thấp sau quầy. Đừng động vào." : "Cầu dao vẫn bình thường.", 3); break;

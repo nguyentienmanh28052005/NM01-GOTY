@@ -32,7 +32,7 @@ namespace HanaMart.Shift
             public Profile Profile;
             public string Kind;
             public int Id;
-            public bool Visitor, Chime, Inside, BlackEntry, Waiting, Paid, IntoStorage, HeatAsked, Heated;
+            public bool Visitor, Chime, Inside, Greeted, BlackEntry, Waiting, Paid, IntoStorage, HeatAsked, Heated;
             public Guest Companion;
         }
 
@@ -336,6 +336,7 @@ namespace HanaMart.Shift
             switch (greeting.Tick(dt, greet, greetingFor != null && greetingFor.Actor.alive))
             {
                 case GreetingResult.Welcome:
+                    if (greetingFor != null) greetingFor.Greeted = true;
                     Say("Bạn: Xin chào quý khách!", 2);
                     PlayClip("ui_ok");
                     break;

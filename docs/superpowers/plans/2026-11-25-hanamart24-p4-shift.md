@@ -29,12 +29,14 @@ Mỗi task bắt đầu bằng test có `[Timeout]` và vòng lặp hữu hạn.
 
 171/171 EditMode. `Run Shift Jobs` chạy qua ray thật ở nhiệm vụ đầu ca, 18 món lên kệ, lò trả món nóng và retry giữ đúng trạng thái stock. Lượt checkout chạy lại đạt. Cờ luật nguy hiểm và kết thúc nối ở Task 4.
 
-## Task 4 — Luật, bẫy, Giờ Đỏ và kết thúc
+## Task 4 — Luật, bẫy, Giờ Đỏ và kết thúc (xong)
 
 - Dịch các lời thoại và nhánh lựa chọn, 13 điều, phụ lục và phần Sổ tay. Giữ điện thoại, số hiện trên màn hình, biến thể giao hàng, giờ cấm tủ đông, người giả và hai kết thúc.
 - Dịch từng kiểm tra vi phạm theo thời hạn, khoảng cách, hướng nhìn, hành vi và điều kiện của `update`. Cảnh cáo lần ba kết thúc ca với lý do tương ứng. Gửi sự kiện qua giao diện cho Kế hoạch 5 và 6.
 - Dịch lịch tối/sáng và vị trí thực thể từ `redHour/updateRed`, điều kiện di chuyển 0.1 m sau .25 giây và hoàn tác ánh sáng khi xong.
 - Test ranh giới 02:00/02:10, 04:44, 06:00, tủ đông và Giờ Đỏ, luồng kết thúc có/không cứu Ji-ho. Kiểm trạng thái camera và input được phục hồi sau retry.
+
+186/186 EditMode. MCP Play thử tử vong tủ đông/retry, Giờ Đỏ và 2 kết thúc ở các mốc riêng, log rỗng. Giữ giới hạn bản gốc 359.7 để khách ca sáng bước vào và 359.5 cho kiểm hội thoại.
 
 ## Task 5 — Tích hợp scene và các mốc kiểm thử
 

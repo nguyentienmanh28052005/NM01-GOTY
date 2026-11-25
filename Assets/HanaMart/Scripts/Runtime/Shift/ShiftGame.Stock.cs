@@ -155,7 +155,7 @@ namespace HanaMart.Shift
             Say("Đã xếp xong. Thùng rỗng gấp lại mang đi.", 2);
         }
 
-        static void Block(Transform parent, string name, Vector3 position, Vector3 dimensions, Material material)
+        static Transform Block(Transform parent, string name, Vector3 position, Vector3 dimensions, Material material)
         {
             var block = GameObject.CreatePrimitive(PrimitiveType.Cube);
             block.name = name;
@@ -166,6 +166,7 @@ namespace HanaMart.Shift
             block.transform.localPosition = position;
             block.transform.localScale = dimensions;
             block.GetComponent<Renderer>().sharedMaterial = material;
+            return block.transform;
         }
 
         GameObject CreateProp(string type, Vector3 position, float maximumSize)

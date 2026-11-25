@@ -48,6 +48,7 @@ namespace HanaMart.Shift
         {
             if (!CanServe || Dialogue != null || Dead || Ended) return;
             var guest = counterCustomer;
+            if (TryStoryCheckout(guest)) return;
             if (guest.Kind == "restroom")
             {
                 ShowDialog(guest.Profile.Name, "Xin lỗi... cho tôi mượn nhà vệ sinh trong kho một chút được không? Gấp lắm.",

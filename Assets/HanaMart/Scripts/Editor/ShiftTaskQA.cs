@@ -75,7 +75,7 @@ namespace HanaMart.EditorTools
             finally { Time.timeScale = scale; }
         }
 
-        static void Use(Interactor interact, StoreMarker[] markers, string id)
+        internal static void Use(Interactor interact, StoreMarker[] markers, string id)
         {
             var target = markers.First(marker => marker.key == "H:" + id);
             var center = target.transform.position;
