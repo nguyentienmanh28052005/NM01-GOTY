@@ -173,8 +173,8 @@ namespace HanaMart.UI
             subtitleText = CreateText(hudRoot.transform, "Subtitle", "", 21f, Color.white, TextAlignmentOptions.Center);
             SetAnchored(subtitleText.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 78f), new Vector2(900f, 64f));
 
-            // Toast (top-right)
-            var toastRt = CreateBox(hudElements.transform, "Toast", new Color(0.015f, 0.04f, 0.04f, 0.82f));
+            // Toast (top-right, on hudRoot so H recMode toggle toast stays visible)
+            var toastRt = CreateBox(hudRoot.transform, "Toast", new Color(0.015f, 0.04f, 0.04f, 0.82f));
             SetAnchored(toastRt, new Vector2(1f, 1f), new Vector2(-40f, -36f), new Vector2(420f, 52f));
             toastGo = toastRt.gameObject;
             var toastBar = CreateBox(toastRt, "Bar", Teal);

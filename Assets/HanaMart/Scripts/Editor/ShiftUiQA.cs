@@ -34,6 +34,15 @@ namespace HanaMart.EditorTools
             camera.GetComponent<PlayerController>().StartCoroutine(CheckHudAndDialog(camera));
         }
 
+        [MenuItem("HanaMart/QA/Run Settings And Presets")]
+        public static void RunSettingsAndPresets()
+        {
+            if (!Application.isPlaying) throw new InvalidOperationException("Settings QA runs in Play mode.");
+            Application.runInBackground = true;
+            var camera = Camera.main;
+            camera.GetComponent<PlayerController>().StartCoroutine(CheckSettingsAndPresets(camera));
+        }
+
         static IEnumerator Check(Camera view)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(Output));
@@ -333,6 +342,144 @@ namespace HanaMart.EditorTools
             }
         }
 
+        static IEnumerator CheckSettingsAndPresets(Camera view)
+        {
+            const string SettingsOutput = "Logs/HanaMart/settings-smoke.json";
+            Directory.CreateDirectory(Path.GetDirectoryName(SettingsOutput));
+            Directory.CreateDirectory("docs/visual/unity");
+            File.Delete(SettingsOutput);
+
+            var game = view.GetComponent<ShiftGame>();
+            var player = view.GetComponent<PlayerController>();
+            var film = view.GetComponent<HanaMart.Render.FilmSettings>();
+            var ui = view.GetComponent<ShiftInterface>();
+            if (!ui) throw new InvalidOperationException("ShiftInterface missing on Main Camera.");
+
+            string tempSaveDir = Path.Combine(Path.GetTempPath(), "HanaMartSettingsQA_" + Guid.NewGuid().ToString("N"));
+            string tempSavePath = Path.Combine(tempSaveDir, SaveStore.FileName);
+            Keyboard virtualKb = null;
+            var prevBg = InputSystem.settings.backgroundBehavior;
+            var prevEditorInput = InputSystem.settings.editorInputBehaviorInPlayMode;
+            InputSystem.settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
+            InputSystem.settings.editorInputBehaviorInPlayMode = InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
+
+            try
+            {
+                yield return null;
+                virtualKb = InputSystem.AddDevice<Keyboard>();
+                InputSystem.EnableDevice(virtualKb);
+                virtualKb.MakeCurrent();
+
+                ui.ReloadSave(tempSavePath);
+                ui.ExecuteAction(UiAction.Start);
+                yield return null;
+                game.Run.Clock.Running = false;
+                yield return null;
+
+                // Pause -> Settings mid-shift
+                ui.Flow.TryPause(false);
+                ui.GetType().GetMethod("SyncState", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)?.Invoke(ui, null);
+                ui.ExecuteAction(UiAction.Settings);
+                yield return null;
+                if (ui.Flow.Screen != UiScreen.Settings || ui.Flow.BackScreen != UiScreen.Pause)
+                    throw new InvalidOperationException("Pause -> Settings failed.");
+
+                ui.SelectSettingsTab(SettingsTab.Gfx);
+                yield return null;
+                yield return CaptureScreen("docs/visual/unity/p6-t3-settings-gfx.png");
+
+                ui.SelectSettingsTab(SettingsTab.Audio);
+                yield return null;
+                yield return CaptureScreen("docs/visual/unity/p6-t3-settings-audio.png");
+
+                ui.SelectSettingsTab(SettingsTab.Ctrl);
+                yield return null;
+                yield return CaptureScreen("docs/visual/unity/p6-t3-settings-ctrl.png");
+
+                // Modify settings across all 3 tabs
+                ui.SelectSettingsTab(SettingsTab.Gfx);
+                ui.StepSettingRow(0, 3); // medium -> cine
+                for (int i = 0; i < 8; i++) ui.StepSettingRow(3, 1); // fov 72 -> 88
+                for (int i = 0; i < 4; i++) ui.StepSettingRow(4, 1); // brightness 1.0 -> 1.2
+                ui.StepSettingRow(5, 1); // grain false
+
+                ui.SelectSettingsTab(SettingsTab.Audio);
+                for (int i = 0; i < 8; i++) ui.StepSettingRow(0, -1); // master 0.9 -> 0.5
+                for (int i = 0; i < 8; i++) ui.StepSettingRow(1, -1); // amb 0.8 -> 0.4
+                for (int i = 0; i < 6; i++) ui.StepSettingRow(2, -1); // sfx 0.9 -> 0.6
+                ui.StepSettingRow(3, 1); // subtitles false
+
+                ui.SelectSettingsTab(SettingsTab.Ctrl);
+                for (int i = 0; i < 8; i++) ui.StepSettingRow(0, 1); // mouseSens 1.0 -> 1.8
+                ui.StepSettingRow(2, 1); // guide true
+                ui.StepSettingRow(3, 1); // invertY true
+                ui.StepSettingRow(4, 1); // rumble false
+                yield return null;
+
+                if (player.BaseFov != 88f || Mathf.Abs(film.bright - 1.2f) > 0.02f || Mathf.Abs(film.grain - 0.01f) > 0.002f ||
+                    Mathf.Abs(film.cine - 1f) > 0.01f || Mathf.Abs(AudioListener.volume - 0.5f) > 0.02f ||
+                    Mathf.Abs(game.AmbientVolume - 0.4f) > 0.02f || Mathf.Abs(game.SfxVolume - 0.6f) > 0.02f ||
+                    !player.settings.invertY || player.RumbleEnabled)
+                    throw new InvalidOperationException("Live settings did not apply to runtime components.");
+
+                // Reload from disk and verify persistence
+                ui.ReloadSave(tempSavePath);
+                yield return null;
+                if (ui.Save.Settings.quality != "cine" || ui.Save.Settings.fov != 88 || !ui.Save.Settings.guide || !ui.Save.Settings.invertY)
+                    throw new InvalidOperationException("Settings did not persist across reload.");
+
+                // Reset defaults and verify
+                ui.ResetSettingsToDefault();
+                yield return null;
+                ui.ReloadSave(tempSavePath);
+                if (ui.Save.Settings.quality != "medium" || ui.Save.Settings.fov != 72 || ui.Save.Settings.guide ||
+                    ui.Save.Settings.invertY || !ui.Save.Settings.rumble || Mathf.Abs(ui.Save.Settings.master - 0.9f) > 0.01f)
+                    throw new InvalidOperationException("ResetSettingsToDefault did not restore hana24_v3 defaults.");
+
+                // Resume Play -> F3 perf overlay -> H recording mode
+                ui.ExecuteAction(UiAction.Back);
+                ui.ExecuteAction(UiAction.Resume);
+                yield return null;
+
+                InputSystem.QueueStateEvent(virtualKb, new KeyboardState(Key.F3));
+                yield return null;
+                InputSystem.QueueStateEvent(virtualKb, new KeyboardState());
+                yield return new WaitForSecondsRealtime(0.6f);
+                if (!ui.PerfOverlayVisible)
+                    throw new InvalidOperationException("F3 did not toggle performance overlay.");
+                yield return CaptureScreen("docs/visual/unity/p6-t3-f3-hud.png");
+
+                InputSystem.QueueStateEvent(virtualKb, new KeyboardState(Key.H));
+                yield return null;
+                InputSystem.QueueStateEvent(virtualKb, new KeyboardState());
+                yield return null;
+                if (!ui.Save.Settings.recMode || ui.HudVisible)
+                    throw new InvalidOperationException("H did not toggle recording mode (hide HUD).");
+
+                // Cleanly turn off F3 and recMode
+                ui.TogglePerfOverlay();
+                ui.ToggleRecMode();
+                ui.ExecuteAction(UiAction.ToMenu);
+                yield return null;
+
+                File.WriteAllText(SettingsOutput, JsonUtility.ToJson(new SettingsQaResult
+                {
+                    passed = true,
+                    effectiveScaleAtReset = ui.EffectiveRenderScale,
+                }, true));
+            }
+            finally
+            {
+                InputSystem.settings.backgroundBehavior = prevBg;
+                InputSystem.settings.editorInputBehaviorInPlayMode = prevEditorInput;
+                if (virtualKb != null) InputSystem.RemoveDevice(virtualKb);
+                if (Directory.Exists(tempSaveDir)) Directory.Delete(tempSaveDir, true);
+                Time.timeScale = 1f;
+            }
+        }
+
+        [Serializable]
+        sealed class SettingsQaResult { public bool passed; public float effectiveScaleAtReset; }
         [Serializable]
         sealed class HudQaResult { public bool passed; public int dialogPicked, endings; }
         [Serializable]

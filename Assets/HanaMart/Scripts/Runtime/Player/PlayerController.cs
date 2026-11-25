@@ -23,7 +23,9 @@ namespace HanaMart.Player
         public bool ExternalView { get; set; }
         public bool AutoManageCursor { get; set; } = true;
         public bool IsFocused => focused;
-        public float CurrentFov => 72f * (1f - Motor.zoom * .4f);
+        public float BaseFov { get; set; } = 72f;
+        public bool RumbleEnabled { get; set; } = true;
+        public float CurrentFov => BaseFov * (1f - Motor.zoom * .4f);
         public float roll;
         Camera view;
         NavMeshDataInstance navMeshInstance;
@@ -70,7 +72,10 @@ namespace HanaMart.Player
             Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
             Cursor.visible = !locked;
         }
-        public void Rumble(float strong, float weak, float seconds) => StartCoroutine(RumbleFor(strong, weak, seconds));
+        public void Rumble(float strong, float weak, float seconds)
+        {
+            if (RumbleEnabled) StartCoroutine(RumbleFor(strong, weak, seconds));
+        }
         System.Collections.IEnumerator RumbleFor(float strong, float weak, float seconds)
         {
             var pad = Gamepad.current;

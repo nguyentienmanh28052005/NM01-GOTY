@@ -15,7 +15,7 @@ namespace HanaMart.Shift
         sealed class ShopLight
         {
             public Light Lamp;
-            public float Brightness, FlickerUntil;
+            public float Brightness, FlickerUntil, PresetScale = 1f;
             public Color Color;
             public bool Inside, Alley, Off;
             public readonly List<(Renderer renderer, Color baseColor, Color emissionColor)> Panels = new();
@@ -377,7 +377,7 @@ namespace HanaMart.Shift
         void PlayAt(string id, Vector3 position)
         {
             var clip = audioBank ? audioBank.Find(id) : null;
-            if (clip) AudioSource.PlayClipAtPoint(clip, ThreeCoords.ToUnity(position), .7f);
+            if (clip) AudioSource.PlayClipAtPoint(clip, ThreeCoords.ToUnity(position), .7f * Mathf.Clamp01(SfxVolume));
         }
 
         StoreMarker NewHit(string id, string text, Vector3 position, Vector3 size)
@@ -453,9 +453,30 @@ namespace HanaMart.Shift
             RenderSettings.reflectionIntensity = baseReflection * level;
         }
 
+        public void ApplyLightPreset(int maxCeilingLights, bool extraLights)
+        {
+            var ceilings = lamps.Where(l => l.Lamp && l.Inside && l.Lamp.transform.position.y > 2.5f)
+                .OrderBy(l => Vector2.Distance(new Vector2(l.Lamp.transform.position.x, l.Lamp.transform.position.z), new Vector2(-6f, 4f)))
+                .ToArray();
+            for (int i = 0; i < ceilings.Length; i++)
+            {
+                bool primary = i < maxCeilingLights;
+                ceilings[i].PresetScale = primary ? 1f : (maxCeilingLights <= 2 ? 0.2f : 0.35f);
+                ceilings[i].Lamp.renderMode = primary ? LightRenderMode.ForcePixel : LightRenderMode.ForceVertex;
+            }
+            foreach (var light in lamps)
+            {
+                if (!light.Lamp) continue;
+                if (light.Inside && light.Lamp.transform.position.y <= 2.5f)
+                    light.PresetScale = extraLights ? 1f : 0.6f;
+                bool powered = light.Inside ? insidePower : outsidePower;
+                ApplyLamp(light, light.Off || !powered ? 0 : 1);
+            }
+        }
+
         void ApplyLamp(ShopLight state, float multiplier)
         {
-            if (state.Lamp) state.Lamp.intensity = state.Brightness * multiplier;
+            if (state.Lamp) state.Lamp.intensity = state.Brightness * state.PresetScale * multiplier;
             if (state.Panels.Count == 0) return;
             tintBlock ??= new MaterialPropertyBlock();
             foreach (var panel in state.Panels)

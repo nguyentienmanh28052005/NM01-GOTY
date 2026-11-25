@@ -42,7 +42,7 @@ namespace HanaMart.UI
         CarryController carry;
         Camera view;
 
-        InputAction navInput, confirmInput, backInput, pauseInput, useInput;
+        InputAction navInput, confirmInput, backInput, pauseInput, useInput, tabPrevInput, tabNextInput, hideUiInput, debugInput;
         readonly InputAction[] optionInputs = new InputAction[3];
 
         GameObject root;
@@ -89,6 +89,7 @@ namespace HanaMart.UI
             game.ExternalDialogInput = true;
             game.ExternalTasksPanel = true;
             player.AutoManageCursor = false;
+            SnapshotGlobals();
             Save = SaveStore.Load(SavePathOverride);
         }
 
@@ -111,15 +112,21 @@ namespace HanaMart.UI
                     navInput = uiMap.FindAction("UiNavigate", false);
                     confirmInput = uiMap.FindAction("UiConfirm", false);
                     backInput = uiMap.FindAction("UiBack", false);
+                    tabPrevInput = uiMap.FindAction("UiTabPrev", false);
+                    tabNextInput = uiMap.FindAction("UiTabNext", false);
                 }
                 pauseInput = player.Input.FindAction("Pause", false);
                 useInput = player.Input.FindAction("Use", false);
+                hideUiInput = player.Input.FindAction("HideUI", false);
+                debugInput = player.Input.FindAction("Debug", false);
                 for (int i = 0; i < optionInputs.Length; i++)
                     optionInputs[i] = player.Input.FindAction("Option" + (i + 1), false);
             }
 
             BuildUi();
             BuildHud();
+            BuildSettingsScreen();
+            ApplyAllSettings();
             SyncState();
         }
 
@@ -127,6 +134,8 @@ namespace HanaMart.UI
         {
             SavePathOverride = path;
             Save = SaveStore.Load(SavePathOverride);
+            ApplyAllSettings();
+            RenderSettingsTab();
             RefreshEndingsText();
         }
 
@@ -246,6 +255,11 @@ namespace HanaMart.UI
             if (Flow.AttractCameraActive)
                 UpdateAttractCamera(Time.unscaledDeltaTime);
 
+            if (debugInput?.WasPressedThisFrame() == true) TogglePerfOverlay();
+            if (Keyboard.current?.f11Key.wasPressedThisFrame == true) Screen.fullScreen = !Screen.fullScreen;
+            if (hideUiInput?.WasPressedThisFrame() == true && Flow.State == AppState.Play && Flow.Screen == UiScreen.None)
+                ToggleRecMode();
+
             if (Flow.State == AppState.Boot)
             {
                 if (bootPressText)
@@ -255,6 +269,10 @@ namespace HanaMart.UI
                 }
                 if (AnyBootInputPressed())
                     TriggerBootAdvance();
+            }
+            else if (Flow.Screen == UiScreen.Settings)
+            {
+                HandleSettingsInput();
             }
             else if (Flow.Screen != UiScreen.None)
             {
@@ -300,6 +318,7 @@ namespace HanaMart.UI
             }
 
             UpdateHud(Time.unscaledDeltaTime);
+            UpdateSettingsRuntime(Time.unscaledDeltaTime);
         }
 
         void HandleDialogInput()
@@ -495,6 +514,7 @@ namespace HanaMart.UI
             foreach (var kv in screens)
                 kv.Value.SetActive(kv.Key == Flow.Screen);
 
+            if (Flow.Screen == UiScreen.Settings) RenderSettingsTab();
             RefreshEndingsText();
             UpdateFocusVisuals();
             UpdatePrompts();
@@ -568,7 +588,6 @@ namespace HanaMart.UI
             BuildBootScreen();
             BuildMenuScreen();
             BuildPauseScreen();
-            BuildSettingsShell();
             BuildHelpScreen();
             BuildDeathScreen();
             BuildEndingScreen();
@@ -652,25 +671,6 @@ namespace HanaMart.UI
                 (UiAction.ToMenu, "Về màn hình chính"),
             });
 
-            AddFooterPrompts(panel.transform);
-        }
-
-        void BuildSettingsShell()
-        {
-            var panel = CreateScreen(UiScreen.Settings, new Color(0.015f, 0.031f, 0.031f, 0.9f));
-            var title = CreateText(panel.transform, "Title", "Cài đặt", 42f, Bright, TextAlignmentOptions.Left);
-            title.fontStyle = FontStyles.Bold;
-            SetAnchored(title.rectTransform, new Vector2(0f, 1f), new Vector2(140f, -80f), new Vector2(500f, 56f));
-
-            var note = CreateText(panel.transform, "Note",
-                "Đồ họa · Âm thanh · Điều khiển\n(Các tùy chọn chi tiết sẽ mở khóa ở bước Cài đặt & Mức đồ họa.)",
-                18f, Muted, TextAlignmentOptions.TopLeft);
-            SetAnchored(note.rectTransform, new Vector2(0f, 1f), new Vector2(140f, -165f), new Vector2(820f, 90f));
-
-            AddMenuButtons(UiScreen.Settings, panel.transform, 140f, -560f, new[]
-            {
-                (UiAction.Back, "← Quay lại"),
-            });
             AddFooterPrompts(panel.transform);
         }
 
@@ -806,6 +806,7 @@ namespace HanaMart.UI
         void OnDestroy()
         {
             if (wasPaused) Time.timeScale = savedTimeScale;
+            RestoreGlobals();
             if (game)
             {
                 game.ShiftStarted -= OnShiftStarted;

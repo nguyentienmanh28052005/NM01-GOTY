@@ -128,12 +128,13 @@ namespace HanaMart.Shift
                 insidePower, outsidePower, player.Motor.pos.y < -4.5f && !Dead && !Ended,
                 redHour != null && redHour.Dark, HasFlag("double"), HasFlag("alleyCall"), Dead, Cinematics.Tension);
             float k = 1 - Mathf.Exp(-6f * dt);
-            SetVolume("amb_rain_inside", mix.RainInside, k);
-            SetVolume("amb_rain_outside", mix.RainOutside, k);
-            SetVolume("amb_hum", mix.Hum, k);
-            SetVolume("amb_hvac", mix.Hvac, k);
-            SetVolume("amb_drone", mix.Drone, k);
-            SetVolume("amb_breath", mix.Breath, k);
+            float amb = Mathf.Clamp01(AmbientVolume);
+            SetVolume("amb_rain_inside", mix.RainInside * amb, k);
+            SetVolume("amb_rain_outside", mix.RainOutside * amb, k);
+            SetVolume("amb_hum", mix.Hum * amb, k);
+            SetVolume("amb_hvac", mix.Hvac * amb, k);
+            SetVolume("amb_drone", mix.Drone * amb, k);
+            SetVolume("amb_breath", mix.Breath * amb, k);
         }
 
         void SetVolume(string id, float target, float blend)

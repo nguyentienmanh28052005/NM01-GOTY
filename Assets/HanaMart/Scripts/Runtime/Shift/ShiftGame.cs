@@ -37,6 +37,8 @@ namespace HanaMart.Shift
         public bool ExternalTasksPanel { get; set; }
         public bool PaperIsRules { get; private set; }
         public bool PaperIsHandwritten { get; private set; }
+        public float AmbientVolume { get; set; } = 0.8f;
+        public float SfxVolume { get; set; } = 0.9f;
         public int LastDeathRule { get; private set; } = -1;
         public string Subtitle => subtitleUntil > Time.time ? subtitle : null;
         public string Speaker { get; private set; }
@@ -249,7 +251,7 @@ namespace HanaMart.Shift
         public void PlayClip(string id)
         {
             var clip = audioBank ? audioBank.Find(id) : null;
-            if (clip) audioSource.PlayOneShot(clip);
+            if (clip) audioSource.PlayOneShot(clip, Mathf.Clamp01(SfxVolume));
         }
 
         public void Strike(int rule, string reason)
