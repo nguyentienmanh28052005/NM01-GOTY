@@ -30,6 +30,7 @@ namespace HanaMart.Shift
         public bool Done { get; private set; }
         public bool Skipped { get; private set; }
         public bool CanSkip => !Done && Time > 1.4f + 1e-6f;
+        public bool CounterTurnsHead(int rule) => Kind == "counter" && (rule == 15 || Variant % 2 == 0);
 
         internal DeathCut(string kind, int variant) { Kind = kind; Variant = variant; }
 

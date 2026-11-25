@@ -25,6 +25,16 @@ namespace HanaMart.Tests
         }
 
         [Test]
+        public void CounterRotatesTheHeadOnEvenVisitsAndForEveryNoShadowDeath()
+        {
+            var cuts = new DeathCuts();
+            Assert.IsFalse(cuts.Begin(3).CounterTurnsHead(3));
+            Assert.IsTrue(cuts.Begin(4).CounterTurnsHead(4));
+            Assert.IsTrue(cuts.Begin(15).CounterTurnsHead(15));
+            Assert.IsTrue(new DeathCuts().Begin(15).CounterTurnsHead(15));
+        }
+
+        [Test]
         public void TimeStepIsClampedAndSkipCannotInterruptTheFirstOnePointFourSeconds()
         {
             var cut = new DeathCuts().Begin(6);

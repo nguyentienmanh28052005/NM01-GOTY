@@ -91,7 +91,9 @@ Chuyển nguyên game kinh dị **"QUY TẮC CA ĐÊM — HANA MART 24"** từ b
 
 - **Task 1 XONG**: `DeathCuts` giữ bảng `SCENE_OF`, variant theo loại cảnh, bước .05 s, bỏ qua sau 1.4 s, giới hạn 20 s. `ShiftGame.Death` runner chuỗi lồng nhau, camera easing, Film, FOV, cảnh thua dự phòng, dọn Actor/đạo cụ/đèn khi retry. `PlayerController.ExternalView` để camera cảnh thua sở hữu trọn khung hình cho tới khi phục hồi. Cảnh riêng theo từng loại ở Task 2–3.
 - RED 23/24 (`2ba6400e326343a38f96cfcca61d8ada`) và RED recap khi sequence kết thúc sớm (`bdaf3067cd5c4abf80d883d1d37649c9`) → **215/215 EditMode GREEN** (`5420511b90e341debcd767c7ad28f80a`). MCP `Run Death Camera` đo xoay tới 112°, skip mở recap, retry dọn Actor và phục hồi Film/input; log Play rỗng. `Run Story Milestones` đã chờ recap mới retry.
-- **Tiếp theo Task 2**: bốn cảnh với khách và người giả (`counter`, `childMom`, `storage`, `mirae`). Chưa chạy ca tương tác liên tục hoặc nghiệm thu hình ảnh cuối.
+- **Task 2 XONG**: `ShiftGame.DeathGuests` nối bốn sequence với khách/người giả. `counter` quay đầu theo mã 15 hoặc variant chẵn, còn lại kéo cổ; `childMom` gõ/nứt kính, trẻ và bóng tối; `storage` đi lùi qua kho, tắt từng đèn, áp sát; `mirae` đồng hồ loạn và sáu bóng qua kính. Đạo cụ sinh trong Play được cleanup khi retry.
+- RED variant (`2b6b8f9ba10d48d2a4e6fcf8eaee39d9`) → **216/216 EditMode GREEN** (`a064f6261da1420c97d602b3d45dcbfa`). MCP `Capture Guest Death Cuts`: cả bốn cảnh chạy hết không skip (4.30/6.27/11.69/7.66 s), kiểm staging riêng, retry, log Play rỗng. Ảnh `docs/visual/deaths/guest-scenes.jpg`; letterbox HUD và so độ sáng/ánh sáng vật liệu vẫn còn ở các kế hoạch sau.
+- **Tiếp theo Task 3**: phone/freezer/CCTV/box13/alley/blackout/red/chase/fired. Chưa chạy ca tương tác liên tục hoặc nghiệm thu hình ảnh cuối.
 
 ## 6. Việc còn lại sau đó (kế hoạch 3–7, viết chi tiết khi bắt đầu)
 3. Nhân vật `Actor` (mặt nạ quần áo + nhuộm, áo mưa vỏ phồng, trẻ em 0.68, biến hình xương + material reveal, NavMesh, clip `Female Walk` retarget, đứng/thở thủ tục).

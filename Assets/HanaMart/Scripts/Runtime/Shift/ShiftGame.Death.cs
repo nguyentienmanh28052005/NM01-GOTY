@@ -91,7 +91,14 @@ namespace HanaMart.Shift
                 stage.SavedPulse = stage.Film.pulse;
             }
             foreach (var light in lamps) stage.Lights.Add((light, light.Off, light.FlickerUntil));
-            stage.Sequence.Push(DeathLunge(stage));
+            stage.Sequence.Push(stage.Cut.Kind switch
+            {
+                "counter" => DeathCounter(stage),
+                "childMom" => DeathChildMom(stage),
+                "storage" => DeathStorage(stage),
+                "mirae" => DeathMirae(stage),
+                _ => DeathLunge(stage),
+            });
             player.ExternalView = true;
             death = stage;
         }

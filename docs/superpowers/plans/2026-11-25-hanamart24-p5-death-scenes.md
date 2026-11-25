@@ -9,10 +9,12 @@ Nguồn chính là `deaths.js`, cùng `game.js:cinematic, updateCinematic, appar
 
 215/215 EditMode đạt, smoke `Run Death Camera` kiểm chuyển góc camera, skip và retry trong Play. Các sequence chuyên biệt nối ở Task 2–3.
 
-## Task 2 — Cảnh với khách và người giả
+## Task 2 — Cảnh với khách và người giả (xong)
 
 - Dịch `counter`, `childMom`, `storage`, `mirae`. `SCENE_OF` dùng chung trình tự cho một số luật, với biến thể theo mã lỗi và lượt gặp như bản gốc. Giữ thời điểm đổi góc máy, tên âm thanh, vị trí đứng, kính nứt và lộ dạng.
 - Test từng ID dẫn đúng nhánh, actor staging/despawn và timeline kết thúc hữu hạn. Chụp khung trước/sau ở các mốc nhận diện.
+
+216/216 EditMode. MCP chạy trọn 4 cảnh, kiểm vết nứt kính và 6 bóng Mi-rae, cleanup khi retry. Ảnh `docs/visual/deaths/guest-scenes.jpg`.
 
 ## Task 3 — Cảnh với thiết bị và địa điểm
 
